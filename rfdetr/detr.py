@@ -123,7 +123,7 @@ class RFDETR:
 
     def train_from_config(self, config: TrainConfig, **kwargs):
         with open(
-            os.path.join(config.dataset_dir, "train", "_annotations.coco.json"), "r"
+            os.path.join(config.dataset_dir, "train.json"), "r"
         ) as f:
             anns = json.load(f)
             num_classes = len(anns["categories"])
