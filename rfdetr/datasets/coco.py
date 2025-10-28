@@ -255,6 +255,10 @@ def build(image_set, args, resolution):
     except:
         square_resize_div_64 = False
 
+    try:
+        include_masks = args.segmentation_head
+    except:
+        include_masks = False
     
     if square_resize_div_64:
         dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms_square_div_64(
@@ -265,7 +269,7 @@ def build(image_set, args, resolution):
             skip_random_resize=not args.do_random_resize_via_padding,
             patch_size=args.patch_size,
             num_windows=args.num_windows
-        ))
+            ), include_masks=include_masks)
     else:
         dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms(
             image_set,
@@ -275,7 +279,7 @@ def build(image_set, args, resolution):
             skip_random_resize=not args.do_random_resize_via_padding,
             patch_size=args.patch_size,
             num_windows=args.num_windows
-        ))
+            ), include_masks=include_masks)
     return dataset
 
 def build_roboflow(image_set, args, resolution):
