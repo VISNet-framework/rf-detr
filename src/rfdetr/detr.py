@@ -189,8 +189,15 @@ class RFDETR:
             num_classes = len(class_names)
             self.model.class_names = class_names
         elif config.dataset_file == "coco":
-            class_names = COCO_CLASSES
-            num_classes = 90
+            # class_names = COCO_CLASSES
+            # num_classes = 90
+            with open(
+                os.path.join(config.dataset_dir, "train.json"), "r"
+            ) as f:
+                anns = json.load(f)
+                num_classes = len(anns["categories"])
+                class_names = [c["name"] for c in anns["categories"] if c["supercategory"] != "none"]
+                self.model.class_names = class_names
         else:
             raise ValueError(f"Invalid dataset file: {config.dataset_file}")
 
