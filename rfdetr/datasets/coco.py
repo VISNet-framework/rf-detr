@@ -22,6 +22,7 @@ Mostly copy-paste from https://github.com/pytorch/vision/blob/13b35ff/references
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import pycocotools.mask as coco_mask
 import torch
 import torch.utils.data
 import torchvision
@@ -30,7 +31,7 @@ from torchvision.transforms.v2 import Compose, ToDtype, ToImage
 
 from rfdetr.datasets.aug_config import AUG_CONFIG
 from rfdetr.datasets.transforms import AlbumentationsWrapper, Normalize
-from rfdetr.utilities.logger import get_logger
+from rfdetr.util.logger import get_logger
 
 logger = get_logger()
 
@@ -56,78 +57,25 @@ def compute_multi_scale_scales(
     return proposed_scales
 
 
-def _is_rle(segmentation: Any) -> bool:
-    """Check whether a COCO segmentation entry is in RLE format.
-
-    RLE annotations are dicts with ``"counts"`` and ``"size"`` keys, as opposed
-    to polygon annotations which are lists of coordinate arrays.
-    This is a structural check only — it verifies key presence but does not
-    validate value types. A dict with counts=None will pass this check but fail
-    downstream in convert_coco_poly_to_mask.
-
-    Args:
-        segmentation: A single COCO segmentation annotation entry.
-
-    Returns:
-        ``True`` if the entry looks like an RLE dict, ``False`` otherwise.
-    """
-    return isinstance(segmentation, dict) and "counts" in segmentation and "size" in segmentation
-
-
 def convert_coco_poly_to_mask(segmentations: List[Any], height: int, width: int) -> torch.Tensor:
-    """Convert COCO segmentation annotations to a binary mask tensor of shape ``[N, H, W]``.
-
-    Supports both polygon and RLE (Run-Length Encoding) annotation formats.
-    Polygon annotations (lists of coordinate arrays) are rasterised via
-    ``pycocotools.mask.frPyObjects``.  RLE annotations (dicts with
-    ``"counts"`` and ``"size"`` keys; ``counts`` may be str or bytes for
-    compressed RLE, or list of ints for uncompressed RLE) are decoded directly, skipping the
-    polygon-to-RLE conversion step.
-
-    Args:
-        segmentations: Per-instance segmentation annotations.  Each element is
-            either a polygon list (``[[x1, y1, x2, y2, ...], ...]``), an RLE
-            dict (``{"counts": ..., "size": [H, W]}``), or ``None`` / empty
-            for instances without a mask.
-            Dicts must be valid COCO RLE annotations with non-empty ``"counts"``
-            and ``"size"`` fields.
-        height: Image height in pixels (used for polygon rasterisation).
-        width: Image width in pixels (used for polygon rasterisation).
-
-    Returns:
-        A ``uint8`` tensor of shape ``(N, H, W)`` where each slice is a binary
-        mask for one instance.  Returns a ``(0, H, W)`` tensor when
-        *segmentations* is empty.
+    """Convert polygon segmentation to a binary mask tensor of shape [N, H, W].
+    Requires pycocotools.
     """
-    import pycocotools.mask as coco_mask
-
     masks = []
-    for segmentation in segmentations:
-        if segmentation is None or (not isinstance(segmentation, dict) and len(segmentation) == 0):
+    for polygons in segmentations:
+        if polygons is None or len(polygons) == 0:
             # empty segmentation for this instance
             masks.append(torch.zeros((height, width), dtype=torch.uint8))
             continue
-        if _is_rle(segmentation):
-            counts = segmentation["counts"]
-            if not isinstance(counts, (str, bytes, list)):
-                raise ValueError(
-                    f"RLE segmentation has unsupported counts type {type(counts).__name__!r}; "
-                    "expected str, bytes, or list"
-                )
-            if isinstance(counts, (str, bytes)):
-                # Compressed RLE — decode directly, skip frPyObjects
-                rles = [segmentation]
-            else:
-                # Uncompressed RLE (counts is a list of ints) — compress first
-                rles = [coco_mask.frPyObjects(segmentation, height, width)]
-        else:
-            rles = coco_mask.frPyObjects(segmentation, height, width)
+        try:
+            rles = coco_mask.frPyObjects(polygons, height, width)
+        except:
+            rles = polygons
         mask = coco_mask.decode(rles)
         if mask.ndim < 3:
             mask = mask[..., None]
         mask = torch.as_tensor(mask, dtype=torch.uint8)
-        # Keep return dtype stable across torch versions (any(...) may return bool).
-        mask = mask.any(dim=2).to(torch.uint8)
+        mask = mask.any(dim=2)
         masks.append(mask)
     if len(masks) == 0:
         return torch.zeros((0, height, width), dtype=torch.uint8)
@@ -201,9 +149,9 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         target = {"image_id": image_id, "annotations": target}
         img, target = self.prepare(img, target)
         if self._transforms is not None:
-            # boxes are absolute [x_min, y_min, x_max, y_max]; conversion to
-            # normalized [cx, cy, w, h] occurs inside Normalize
-            img, target = self._transforms(img, target)
+            img, target = self._transforms(
+                img, target
+            )  # boxes are absolute [x_min, y_min, x_max, y_max]; conversion to normalized [cx, cy, w, h] occurs inside Normalize
         return img, target
 
 
@@ -226,9 +174,8 @@ class ConvertCoco(object):
     after clamping to image boundaries) are filtered out.
 
     Args:
-        include_masks: If ``True``, decode segmentation annotations (polygon or
-            RLE format) into binary masks and include them in the returned
-            target dict.
+        include_masks: If ``True``, decode polygon segmentation annotations into
+            binary masks and include them in the returned target dict.
         cat2label: Optional mapping from COCO ``category_id`` values to contiguous
             0-based label indices.  When ``None`` (default) the raw
             ``category_id`` values are used as labels directly, which is correct
@@ -392,7 +339,6 @@ def make_coco_transforms(
     patch_size: int = 16,
     num_windows: int = 4,
     aug_config: Optional[Dict[str, Dict[str, Any]]] = None,
-    gpu_postprocess: bool = False,
 ) -> Compose:
     """Build the standard COCO transform pipeline for a given dataset split.
 
@@ -403,17 +349,12 @@ def make_coco_transforms(
     For the ``"train"`` split the pipeline uses a two-branch ``OneOf`` between a
     direct resize and a resize → random-crop → resize sequence (built via
     :func:`_build_train_resize_config`), followed by the augmentation stack and
-    normalisation.  For ``"val"``, ``"test"``, and ``"val_speed"`` only resize and
-    normalisation are applied — no augmentation.
-
-    When *gpu_postprocess* is ``True``, both the Albumentations augmentation
-    wrappers and the ``Normalize`` step are omitted from the ``"train"`` pipeline.
-    The ``RFDETRDataModule`` then applies augmentation and normalization on the
-    device in ``on_after_batch_transfer`` instead.
+    normalisation.  For ``"val"`` and ``"val_speed"`` only resize and
+    normalisation are applied.
 
     Args:
-        image_set: Dataset split identifier — ``"train"``, ``"val"``, ``"test"``,
-            or ``"val_speed"``.
+        image_set: Dataset split identifier — ``"train"``, ``"val"``, or
+            ``"val_speed"``.
         resolution: Target short-side resolution in pixels.  During validation the
             longest side is capped at 1333 px to preserve aspect ratio.
         multi_scale: If ``True``, sample the resize target from a range of scales
@@ -431,10 +372,6 @@ def make_coco_transforms(
             :class:`~rfdetr.datasets.transforms.AlbumentationsWrapper`.  Falls back
             to the default :data:`~rfdetr.datasets.aug_config.AUG_CONFIG` when
             ``None``.
-        gpu_postprocess: When ``True``, skip Albumentations augmentation wrappers and
-            ``Normalize`` from the CPU pipeline.  The ``RFDETRDataModule`` then applies
-            both augmentation and normalization on the GPU in
-            ``on_after_batch_transfer``.  Has no effect on val/test splits.
 
     Returns:
         A :class:`torchvision.transforms.v2.Compose` pipeline ready to be passed
@@ -460,16 +397,10 @@ def make_coco_transforms(
         resize_wrappers = AlbumentationsWrapper.from_config(
             _build_train_resize_config(scales, square=False, max_size=1333)
         )
-        pipeline = [*resize_wrappers]
-        if not gpu_postprocess:
-            aug_wrappers = AlbumentationsWrapper.from_config(resolved_aug_config)
-            pipeline += [*aug_wrappers]
-        pipeline += [to_image, to_float]
-        if not gpu_postprocess:
-            pipeline += [normalize]
-        return Compose(pipeline)
+        aug_wrappers = AlbumentationsWrapper.from_config(resolved_aug_config)
+        return Compose([*resize_wrappers, *aug_wrappers, to_image, to_float, normalize])
 
-    if image_set in ("val", "test"):
+    if image_set == "val":
         resize_wrappers = AlbumentationsWrapper.from_config(
             [
                 {"SmallestMaxSize": {"max_size": resolution}},
@@ -493,7 +424,6 @@ def make_coco_transforms_square_div_64(
     patch_size: int = 16,
     num_windows: int = 4,
     aug_config: Optional[Dict[str, Dict[str, Any]]] = None,
-    gpu_postprocess: bool = False,
 ) -> Compose:
     """
     Create COCO transforms with square resizing where the output size is divisible by 64.
@@ -502,11 +432,6 @@ def make_coco_transforms_square_div_64(
     resizes them to square shapes suitable for models that require spatial dimensions
     divisible by 64. It supports multi-scale training and optional random resizing and
     cropping for the training split.
-
-    When *gpu_postprocess* is ``True``, both the Albumentations augmentation
-    wrappers and the ``Normalize`` step are omitted from the ``"train"`` pipeline.
-    The ``RFDETRDataModule`` then applies augmentation and normalization on the
-    device in ``on_after_batch_transfer`` instead.
 
     Args:
         image_set: Dataset split identifier. Expected values are "train", "val",
@@ -528,10 +453,6 @@ def make_coco_transforms_square_div_64(
         aug_config: Augmentation configuration dictionary compatible with
             :class:`~rfdetr.datasets.transforms.AlbumentationsWrapper`. If ``None``,
             the default :data:`~rfdetr.datasets.aug_config.AUG_CONFIG` is used.
-        gpu_postprocess: When ``True``, skip Albumentations augmentation wrappers and
-            ``Normalize`` from the CPU pipeline.  The ``RFDETRDataModule`` then applies
-            both augmentation and normalization on the GPU in
-            ``on_after_batch_transfer``.  Has no effect on val/test splits.
 
     Returns:
         A ``Compose`` object containing the composed image transforms appropriate
@@ -552,14 +473,8 @@ def make_coco_transforms_square_div_64(
     if image_set == "train":
         resolved_aug_config = aug_config if aug_config is not None else AUG_CONFIG
         resize_wrappers = AlbumentationsWrapper.from_config(_build_train_resize_config(scales, square=True))
-        pipeline = [*resize_wrappers]
-        if not gpu_postprocess:
-            aug_wrappers = AlbumentationsWrapper.from_config(resolved_aug_config)
-            pipeline += [*aug_wrappers]
-        pipeline += [to_image, to_float]
-        if not gpu_postprocess:
-            pipeline += [normalize]
-        return Compose(pipeline)
+        aug_wrappers = AlbumentationsWrapper.from_config(resolved_aug_config)
+        return Compose([*resize_wrappers, *aug_wrappers, to_image, to_float, normalize])
 
     if image_set in ("val", "test", "val_speed"):
         resize_wrappers = AlbumentationsWrapper.from_config([{"Resize": {"height": resolution, "width": resolution}}])
@@ -569,7 +484,7 @@ def make_coco_transforms_square_div_64(
 
 
 def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
-    root = Path(getattr(args, "dataset_dir", None) or args.coco_path)
+    root = Path(args.coco_path)
     if not root.exists():
         logger.error(f"COCO path {root} does not exist")
         raise FileNotFoundError(f"COCO path {root} does not exist")
@@ -582,7 +497,6 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
     # }
 
     # img_folder, ann_file = PATHS[image_set.split("_")[0]]
-
     PATHS = {
         "train": (root / "train.json"),
         "val": (root / "val.json"),
@@ -592,25 +506,10 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
     ann_file = PATHS[image_set.split("_")[0]]
     img_folder = root
 
+
     square_resize_div_64 = getattr(args, "square_resize_div_64", False)
     include_masks = getattr(args, "segmentation_head", False)
     aug_config = getattr(args, "aug_config", None)
-    augmentation_backend = getattr(args, "augmentation_backend", "cpu")
-    resolved_augmentation_backend = augmentation_backend
-    if include_masks and augmentation_backend != "cpu":
-        logger.warning(
-            "Segmentation training does not currently support GPU postprocess transforms; "
-            "forcing augmentation_backend='cpu' to retain CPU transforms and normalization."
-        )
-        resolved_augmentation_backend = "cpu"
-    if resolved_augmentation_backend != "cpu":
-        resolved_augmentation_backend = _resolve_runtime_augmentation_backend(resolved_augmentation_backend)
-        if resolved_augmentation_backend == "cpu":
-            logger.warning(
-                "augmentation_backend='auto' resolved to 'cpu' because CUDA or kornia is unavailable; "
-                "disabling GPU postprocess transforms and retaining CPU normalization."
-            )
-    gpu_postprocess = resolved_augmentation_backend != "cpu" and not include_masks
 
     if square_resize_div_64:
         logger.info(f"Building COCO {image_set} dataset with square resize at resolution {resolution}")
@@ -626,7 +525,6 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
                 patch_size=args.patch_size,
                 num_windows=args.num_windows,
                 aug_config=aug_config,
-                gpu_postprocess=gpu_postprocess,
             ),
             include_masks=include_masks,
         )
@@ -644,25 +542,10 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
                 patch_size=args.patch_size,
                 num_windows=args.num_windows,
                 aug_config=aug_config,
-                gpu_postprocess=gpu_postprocess,
             ),
             include_masks=include_masks,
         )
     return dataset
-
-
-def _resolve_runtime_augmentation_backend(backend: str) -> str:
-    """Resolve ``augmentation_backend`` at runtime for dataset builders.
-
-    Thin wrapper around :func:`rfdetr.datasets.kornia_transforms.resolve_augmentation_backend`
-    kept for backward-compatibility with callers in ``yolo.py``.
-
-    ``"auto"`` becomes ``"gpu"`` only when CUDA and Kornia are both available,
-    otherwise ``"cpu"``. Explicit ``"cpu"``/``"gpu"`` values pass through.
-    """
-    from rfdetr.datasets.kornia_transforms import resolve_augmentation_backend
-
-    return resolve_augmentation_backend(backend)
 
 
 def build_roboflow_from_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
@@ -675,14 +558,25 @@ def build_roboflow_from_coco(image_set: str, args: Any, resolution: int) -> Coco
     if not root.exists():
         logger.error(f"Roboflow dataset path {root} does not exist")
         raise FileNotFoundError(f"Roboflow dataset path {root} does not exist")
+    # PATHS = {
+        # "train": (root / "train2017", root / "annotations" / f'{mode}_train2017.json'),
+        # "val": (root /  "val2017", root / "annotations" / f'{mode}_val2017.json'),
+        # "test": (root / "test2017", root / "annotations" / 'image_info_test-dev2017.json'),
+    # }
+    # img_folder, ann_file = PATHS[image_set.split("_")[0]]
 
-    PATHS = {  # noqa: N806
-        "train": (root / "train", root / "train" / "_annotations.coco.json"),
-        "val": (root / "valid", root / "valid" / "_annotations.coco.json"),
-        "test": (root / "test", root / "test" / "_annotations.coco.json"),
+    PATHS = {
+        # "train": (root / "train2017", root / "annotations" / f'{mode}_train2017.json'),
+        # "val": (root /  "val2017", root / "annotations" / f'{mode}_val2017.json'),
+        # "test": (root / "test2017", root / "annotations" / 'image_info_test-dev2017.json'),
+        "train": (root / "train.json"),
+        "val": (root / "val.json"),
+        "test": (root / "test.json"),
     }
 
-    img_folder, ann_file = PATHS[image_set.split("_")[0]]
+    ann_file = PATHS[image_set.split("_")[0]]
+    img_folder = root
+
     square_resize_div_64 = getattr(args, "square_resize_div_64", False)
     include_masks = getattr(args, "segmentation_head", False)
     multi_scale = getattr(args, "multi_scale", False)
@@ -691,8 +585,6 @@ def build_roboflow_from_coco(image_set: str, args: Any, resolution: int) -> Coco
     patch_size = getattr(args, "patch_size", 16)
     num_windows = getattr(args, "num_windows", 4)
     aug_config = getattr(args, "aug_config", None)
-    resolved_augmentation_backend = _resolve_runtime_augmentation_backend(getattr(args, "augmentation_backend", "cpu"))
-    gpu_postprocess = resolved_augmentation_backend != "cpu" and not include_masks
 
     if square_resize_div_64:
         logger.info(f"Building Roboflow {image_set} dataset with square resize at resolution {resolution}")
@@ -708,7 +600,6 @@ def build_roboflow_from_coco(image_set: str, args: Any, resolution: int) -> Coco
                 patch_size=patch_size,
                 num_windows=num_windows,
                 aug_config=aug_config,
-                gpu_postprocess=gpu_postprocess,
             ),
             include_masks=include_masks,
             remap_category_ids=True,
@@ -727,7 +618,6 @@ def build_roboflow_from_coco(image_set: str, args: Any, resolution: int) -> Coco
                 patch_size=patch_size,
                 num_windows=num_windows,
                 aug_config=aug_config,
-                gpu_postprocess=gpu_postprocess,
             ),
             include_masks=include_masks,
             remap_category_ids=True,

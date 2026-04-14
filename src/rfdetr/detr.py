@@ -939,6 +939,8 @@ class RFDETR:
         """
         if is_valid_coco_dataset(dataset_dir):
             coco_path = os.path.join(dataset_dir, "train", "_annotations.coco.json")
+            coco_path = os.path.join(dataset_dir, "train.json")
+
             with open(coco_path, encoding="utf-8") as f:
                 anns = json.load(f)
             categories = anns["categories"]
