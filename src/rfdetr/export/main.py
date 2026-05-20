@@ -31,11 +31,26 @@ from rfdetr.utilities.package import get_sha, get_version
 logger = get_logger()
 
 
-def make_infer_image(infer_dir, shape, batch_size, device="cuda"):
+def make_infer_image(infer_dir, shape, batch_size, device="cuda", num_channels: int = 3):
     if infer_dir is None:
-        dummy = np.random.randint(0, 256, (shape[0], shape[1], 3), dtype=np.uint8)
-        image = Image.fromarray(dummy, mode="RGB")
+        if num_channels == 3:
+            dummy = np.random.randint(0, 256, (shape[0], shape[1], 3), dtype=np.uint8)
+            image = Image.fromarray(dummy, mode="RGB")
+        else:
+            # Non-RGB: build a random float tensor directly, bypassing PIL.
+            # Normalization is intentionally skipped here — export tracing only
+            # requires tensors of the correct shape and dtype (float32), not the
+            # correct distribution.  Real inference normalizes via predict() before
+            # the tensor reaches the exported model, so the ONNX/TensorRT graph
+            # never sees raw [0, 1] inputs in production.
+            inps = torch.rand(batch_size, num_channels, shape[0], shape[1], device=device)
+            return inps
     else:
+        if num_channels != 3:
+            raise ValueError(
+                "Providing `infer_dir` is only supported for RGB models (num_channels=3). "
+                "For non-RGB models, omit `infer_dir` to use a synthetic dummy input."
+            )
         image = Image.open(infer_dir).convert("RGB")
 
     transforms = Compose(
@@ -174,5 +189,11 @@ def main(args):
             "The simplify flag is deprecated and ignored. RF-DETR no longer runs ONNX simplification automatically."
         )
 
+    onnx_path = output_file  # preserve ONNX path before any post-processing step overwrites it
+
     if args.tensorrt:
-        output_file = trtexec(output_file, args)
+        output_file = trtexec(onnx_path, args)
+
+    # TODO: register --tflite, --quantization, --calibration-data, --max-images in the
+    # argparser to enable TFLite export via CLI.  Until then, use RFDETR.export(format="tflite").
+    _ = onnx_path  # referenced above; suppress unused-variable warning until CLI is wired up

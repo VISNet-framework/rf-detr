@@ -19,7 +19,7 @@ from rfdetr.datasets import build_dataset
 from rfdetr.datasets.aug_config import AUG_CONFIG
 from rfdetr.utilities.box_ops import box_xyxy_to_cxcywh
 from rfdetr.utilities.logger import get_logger
-from rfdetr.utilities.tensors import collate_fn
+from rfdetr.utilities.tensors import make_collate_fn
 
 logger = get_logger()
 
@@ -154,6 +154,21 @@ class RFDETRDataModule(LightningDataModule):
         self.model_config = model_config
         self.train_config = train_config
 
+        # Backbone divisibility requirement: inputs with windowed attention must
+        # have H and W divisible by patch_size * num_windows. The collate_fn
+        # below rounds batch-max H/W up to this value so the mask accurately
+        # marks every pad pixel.
+        block_size = model_config.patch_size * model_config.num_windows
+        if block_size <= 0:
+            raise ValueError(
+                "Computed collate block_size must be > 0, got "
+                f"{block_size} from patch_size={model_config.patch_size} "
+                f"and num_windows={model_config.num_windows}."
+            )
+        self._collate_fn = make_collate_fn(
+            block_size=block_size,
+        )
+
         self._dataset_train: Optional[torch.utils.data.Dataset] = None
         self._dataset_val: Optional[torch.utils.data.Dataset] = None
         self._dataset_test: Optional[torch.utils.data.Dataset] = None
@@ -273,7 +288,7 @@ class RFDETRDataModule(LightningDataModule):
                 dataset,
                 batch_size=batch_size,
                 sampler=sampler,
-                collate_fn=collate_fn,
+                collate_fn=self._collate_fn,
                 num_workers=num_workers,
                 pin_memory=self._pin_memory,
                 persistent_workers=self._persistent_workers,
@@ -292,7 +307,7 @@ class RFDETRDataModule(LightningDataModule):
             batch_size=batch_size,
             shuffle=True,
             drop_last=True,  # no-op after alignment, but keeps intent explicit
-            collate_fn=collate_fn,
+            collate_fn=self._collate_fn,
             num_workers=num_workers,
             pin_memory=self._pin_memory,
             persistent_workers=self._persistent_workers,
@@ -310,7 +325,7 @@ class RFDETRDataModule(LightningDataModule):
             batch_size=self.train_config.batch_size,
             sampler=torch.utils.data.SequentialSampler(self._dataset_val),
             drop_last=False,
-            collate_fn=collate_fn,
+            collate_fn=self._collate_fn,
             num_workers=self._num_workers,
             pin_memory=self._pin_memory,
             persistent_workers=self._persistent_workers,
@@ -328,7 +343,7 @@ class RFDETRDataModule(LightningDataModule):
             batch_size=self.train_config.batch_size,
             sampler=torch.utils.data.SequentialSampler(self._dataset_test),
             drop_last=False,
-            collate_fn=collate_fn,
+            collate_fn=self._collate_fn,
             num_workers=self._num_workers,
             pin_memory=self._pin_memory,
             persistent_workers=self._persistent_workers,
@@ -346,7 +361,7 @@ class RFDETRDataModule(LightningDataModule):
             batch_size=self.train_config.batch_size,
             sampler=torch.utils.data.SequentialSampler(self._dataset_val),
             drop_last=False,
-            collate_fn=collate_fn,
+            collate_fn=self._collate_fn,
             num_workers=self._num_workers,
             pin_memory=self._pin_memory,
             persistent_workers=self._persistent_workers,
@@ -389,6 +404,7 @@ class RFDETRDataModule(LightningDataModule):
         self._kornia_pipeline = build_kornia_pipeline(
             self.train_config.aug_config if self.train_config.aug_config is not None else AUG_CONFIG,
             self.model_config.resolution,
+            with_masks=self.model_config.segmentation_head,
         )
         self._kornia_normalize = build_normalize()
         logger.info("Kornia GPU augmentation pipeline built (backend=%s)", backend)
@@ -400,7 +416,8 @@ class RFDETRDataModule(LightningDataModule):
         augmentation and normalization are applied on the GPU.  Validation
         and test batches pass through unchanged.
 
-        Segmentation models skip GPU augmentation in phase 1 with a warning.
+        Segmentation models use a mask-aware pipeline (``with_masks=True``) so
+        images, boxes, and per-instance masks are augmented in sync.
 
         Args:
             batch: Tuple of ``(NestedTensor, list[dict])`` already on device.
@@ -412,11 +429,7 @@ class RFDETRDataModule(LightningDataModule):
         if self.trainer is None or not self.trainer.training or self._kornia_pipeline is None:
             return batch
 
-        if self.model_config.segmentation_head:
-            logger.warning_once("Kornia GPU augmentation skipped for segmentation models (phase 2)")
-            return batch
-
-        from rfdetr.datasets.kornia_transforms import collate_boxes, unpack_boxes
+        from rfdetr.datasets.kornia_transforms import collate_boxes, collate_masks, unpack_boxes
         from rfdetr.utilities.tensors import NestedTensor
 
         samples, targets = batch
@@ -426,9 +439,20 @@ class RFDETRDataModule(LightningDataModule):
         self._kornia_pipeline.to(img.device)
         self._kornia_normalize.to(img.device)
         boxes_padded, valid = collate_boxes(targets, img.device)
-        img_aug, boxes_aug = self._kornia_pipeline(img, boxes_padded)
-        img_aug = self._kornia_normalize(img_aug)
-        targets = unpack_boxes(boxes_aug, valid, targets, *img_aug.shape[-2:])
+
+        if self.model_config.segmentation_head:
+            image_height, image_width = img.shape[-2:]
+            masks_padded = collate_masks(
+                targets, img.device, n_max=valid.shape[1], image_height=image_height, image_width=image_width
+            )
+            img_aug, boxes_aug, masks_aug = self._kornia_pipeline(img, boxes_padded, masks_padded)
+            img_aug = self._kornia_normalize(img_aug)
+            targets = unpack_boxes(boxes_aug, valid, targets, *img_aug.shape[-2:], masks_aug=masks_aug)
+        else:
+            img_aug, boxes_aug = self._kornia_pipeline(img, boxes_padded)
+            img_aug = self._kornia_normalize(img_aug)
+            targets = unpack_boxes(boxes_aug, valid, targets, *img_aug.shape[-2:])
+
         height, width = img_aug.shape[-2:]
         for target in targets:
             boxes = target["boxes"]

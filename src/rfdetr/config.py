@@ -7,10 +7,20 @@
 
 import os
 import warnings
-from typing import Any, ClassVar, Dict, List, Literal, Mapping, Optional, Union
+from typing import Any, ClassVar, Dict, List, Literal, Mapping, Optional, TypeAlias, Union
 
 import torch
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic_core import PydanticUndefined
+
+EncoderName: TypeAlias = Literal["dinov2_windowed_small", "dinov2_windowed_base", "dinov2_registers_windowed_small"]
+
+
+class PretrainWeightsCompatibilityWarning(UserWarning):
+    """Warning emitted when ``ModelConfig`` overrides are likely to prevent the variant's
+    published pretrained weights from loading into the model — leaving large portions
+    of the model randomly initialized and typically producing much lower accuracy.
+    """
 
 
 def _detect_device() -> str:
@@ -77,7 +87,7 @@ class BaseConfig(BaseModel):
 
 
 class ModelConfig(BaseConfig):
-    encoder: Literal["dinov2_windowed_small", "dinov2_windowed_base"]
+    encoder: EncoderName
     out_feature_indexes: List[int]
     dec_layers: int
     two_stage: bool = True
@@ -97,6 +107,7 @@ class ModelConfig(BaseConfig):
     lite_refpoint_refine: bool = True
     layer_norm: bool = True
     amp: bool = True
+    num_channels: int = Field(default=3, ge=1)
     num_classes: int = 90
     pretrain_weights: Optional[str] = None
     # torch.device values are accepted at validation time and normalized to string.
@@ -182,16 +193,188 @@ class ModelConfig(BaseConfig):
 
         return self
 
+    @model_validator(mode="after")
+    def _warn_pretrain_compatibility(self) -> "ModelConfig":
+        """Warn when overrides are likely to prevent published pretrained weights from loading.
+
+        Three cases:
+
+        1. ``pretrain_weights`` was explicitly set to ``None`` and the variant
+           has a non-``None`` default → warn that the model is being initialised
+           from scratch.
+        2. ``pretrain_weights`` was explicitly set to a non-``None`` custom path
+           → suppress the architecture-override check (we cannot know the
+           architecture stored in a user-supplied checkpoint at config time).
+           The load-time partial-load detector in
+           :func:`rfdetr.models.weights.load_pretrain_weights` covers this case
+           by inspecting the checkpoint contents directly.
+        3. ``pretrain_weights`` is the variant's published default → check
+           architecture-affecting fields against the variant defaults and emit
+           a single consolidated warning listing every load-breaking override.
+
+        The warning class is :class:`PretrainWeightsCompatibilityWarning` (a
+        :class:`UserWarning` subclass), silenceable via the standard
+        ``warnings.filterwarnings`` machinery.
+        """
+        cls = type(self)
+        fields_set = self.model_fields_set
+        pretrain_user_set = "pretrain_weights" in fields_set
+
+        if pretrain_user_set and self.pretrain_weights is None:
+            default_pretrain = cls.model_fields["pretrain_weights"].default
+            if default_pretrain is not PydanticUndefined and default_pretrain is not None:
+                warnings.warn(
+                    f"{cls.__name__} was instantiated with pretrain_weights=None. "
+                    f"The model will be initialised from scratch, which typically "
+                    f"produces lower accuracy than fine-tuning from the published "
+                    f"checkpoint ({default_pretrain!r}).",
+                    PretrainWeightsCompatibilityWarning,
+                    stacklevel=2,
+                )
+            return self
+
+        if pretrain_user_set and self.pretrain_weights is not None:
+            # Custom checkpoint: architecture overrides may match what the
+            # checkpoint was trained with.  Defer to the load-time partial-load
+            # detector which can read the file.
+            # Exception: when the user explicitly passes the variant's own
+            # published-default path string (e.g. ``"rf-detr-nano.pth"``), it
+            # IS the published checkpoint — treat it as case 3 so architecture-
+            # override checks still apply.  Compare after expand_path so bare
+            # filenames resolve to the same cache-dir path as self.pretrain_weights.
+            _default_pretrain = cls.model_fields["pretrain_weights"].default
+            if _default_pretrain is not None and _default_pretrain is not PydanticUndefined:
+                _expanded_default = cls.expand_path(_default_pretrain)
+                if self.pretrain_weights != _expanded_default:
+                    return self
+                # Falls through to case-3 when the user passed the exact variant default.
+            else:
+                return self
+
+        # `pretrain_weights` is the variant's published default — check
+        # architecture overrides against the class defaults.
+        # Skip entirely when this variant has no published checkpoint (default
+        # is None/PydanticUndefined); warning would reference "(None)" which is
+        # misleading and confusing for users of the abstract base config.
+        _class_default_pretrain = cls.model_fields["pretrain_weights"].default
+        if _class_default_pretrain is None or _class_default_pretrain is PydanticUndefined:
+            return self
+
+        overrides: list[tuple[str, Any, Any]] = []
+
+        # Fields that, when explicitly overridden to any value other than the
+        # variant default, prevent the published checkpoint from loading cleanly.
+        # Includes major architecture knobs, "less obvious" knobs (bbox_reparam,
+        # lite_refpoint_refine, layer_norm, two_stage), defense-in-depth for
+        # fields that currently raise hard errors (patch_size, segmentation_head),
+        # and num_channels (loads via heuristic but result isn't real pretrained
+        # weights for the new input domain).
+        breaking_fields: tuple[str, ...] = (
+            "encoder",
+            "hidden_dim",
+            "dec_layers",
+            "num_windows",
+            "sa_nheads",
+            "ca_nheads",
+            "dec_n_points",
+            "out_feature_indexes",
+            "projector_scale",
+            "bbox_reparam",
+            "lite_refpoint_refine",
+            "layer_norm",
+            "two_stage",
+            "patch_size",
+            "segmentation_head",
+            "num_channels",
+        )
+        # Fields where only an *increase* above the variant default is load-breaking:
+        # num_queries / group_detr add slots whose shape differs — decrease is fine.
+        breaking_on_increase: tuple[str, ...] = (
+            "num_queries",
+            "group_detr",
+        )
+
+        for name in breaking_fields:
+            if name not in fields_set:
+                continue
+            field_info = cls.model_fields.get(name)
+            if field_info is None or field_info.is_required():
+                continue
+            default = field_info.default
+            if default is PydanticUndefined:
+                continue
+            current = getattr(self, name)
+            if current != default:
+                overrides.append((name, current, default))
+
+        for name in breaking_on_increase:
+            if name not in fields_set:
+                continue
+            field_info = cls.model_fields.get(name)
+            if field_info is None or field_info.is_required():
+                continue
+            default = field_info.default
+            if default is PydanticUndefined or not isinstance(default, int):
+                continue
+            current = getattr(self, name)
+            if isinstance(current, int) and current > default:
+                overrides.append((name, current, default))
+
+        # ``mask_downsample_ratio`` only affects segmentation models — skip on
+        # detector-only variants to avoid a misleading "weights won't load" warning.
+        if "mask_downsample_ratio" in fields_set and self.segmentation_head:
+            _mdr_info = cls.model_fields.get("mask_downsample_ratio")
+            if _mdr_info is not None and not _mdr_info.is_required():
+                _mdr_default = _mdr_info.default
+                if _mdr_default is not PydanticUndefined:
+                    _mdr_current = getattr(self, "mask_downsample_ratio")
+                    if _mdr_current != _mdr_default:
+                        overrides.append(("mask_downsample_ratio", _mdr_current, _mdr_default))
+
+        if overrides:
+            default_pretrain = cls.model_fields["pretrain_weights"].default
+            lines = "\n".join(
+                f"  {name}: {current!r} (variant default: {default!r})" for name, current, default in overrides
+            )
+            warnings.warn(
+                f"{cls.__name__} was instantiated with overrides that differ from the variant "
+                f"defaults in ways that prevent the published pretrained weights "
+                f"({default_pretrain!r}) from loading correctly:\n"
+                f"{lines}\n"
+                "Loading the checkpoint with this configuration will leave significant portions "
+                "of the model randomly initialised, which typically produces lower accuracy. "
+                "To suppress this warning: revert the override(s), pick a variant whose defaults "
+                "match, or pass pretrain_weights=None to acknowledge that you intend to train "
+                "from scratch.",
+                PretrainWeightsCompatibilityWarning,
+                stacklevel=2,
+            )
+
+        return self
+
     @field_validator("pretrain_weights", mode="after")
     @classmethod
     def expand_path(cls, v: Optional[str]) -> Optional[str]:
-        """
-        Expand user paths (e.g., '~' or paths with separators) but leave simple filenames
-        (like 'rf-detr-base.pth') unchanged so they can match hosted model keys.
+        """Expand and resolve the pretrain_weights path.
+
+        Bare filenames (no directory component, e.g. ``rf-detr-base.pth``) are
+        resolved to the model cache directory so weights land in a stable,
+        user-configurable location (``~/.roboflow/models`` by default, or the
+        path set via the ``RF_HOME`` environment variable) instead of CWD.
+
+        Paths that already contain a directory separator (e.g. ``~/models/x.pth``,
+        ``/abs/path/x.pth``, ``models/x.pth``) are normalised with
+        ``os.path.realpath`` as before.
         """
         if v is None:
             return v
-        return os.path.realpath(os.path.expanduser(v))
+        expanded = os.path.expanduser(v)
+        if not os.path.dirname(expanded):
+            # Bare filename → use model cache dir so weights don't land in CWD.
+            from rfdetr.assets.model_weights import get_model_cache_dir
+
+            return os.path.join(get_model_cache_dir(), expanded)
+        return os.path.realpath(expanded)
 
     @field_validator("device", mode="before")
     @classmethod
@@ -225,7 +408,7 @@ class RFDETRBaseConfig(ModelConfig):
     The configuration for an RF-DETR Base model.
     """
 
-    encoder: Literal["dinov2_windowed_small", "dinov2_windowed_base"] = "dinov2_windowed_small"
+    encoder: EncoderName = "dinov2_windowed_small"
     hidden_dim: int = 256
     patch_size: int = 14
     num_windows: int = 4
@@ -247,7 +430,7 @@ class RFDETRLargeDeprecatedConfig(RFDETRBaseConfig):
     The configuration for an RF-DETR Large model.
     """
 
-    encoder: Literal["dinov2_windowed_small", "dinov2_windowed_base"] = "dinov2_windowed_base"
+    encoder: EncoderName = "dinov2_windowed_base"
     hidden_dim: int = 384
     sa_nheads: int = 12
     ca_nheads: int = 24
@@ -450,6 +633,7 @@ class TrainConfig(BaseModel):
     ema_tau: int = 100
     lr_drop: int = 100
     checkpoint_interval: int = Field(default=10, ge=1)
+    skip_best_epochs: int = Field(default=0, ge=0)
     warmup_epochs: float = 0.0
     lr_vit_layer_decay: float = 0.8
     lr_component_decay: float = 0.7
@@ -489,6 +673,16 @@ class TrainConfig(BaseModel):
     aug_config: Optional[Dict[str, Any]] = None
     augmentation_backend: Literal["cpu", "auto", "gpu"] = "cpu"
     save_dataset_grids: bool = False
+    notes: Optional[Any] = Field(
+        default=None,
+        description=(
+            "User-defined provenance metadata embedded in best-model .pth checkpoints "
+            "under checkpoint['args']['notes'] and in exported ONNX files under the "
+            "'rfdetr_notes' metadata property. Accepts any JSON-serialisable value "
+            "(string, dict, list, int, float, bool). String values are stored verbatim; "
+            "all other types are JSON-encoded."
+        ),
+    )
 
     @model_validator(mode="after")
     def _warn_deprecated_train_config_fields(self) -> "TrainConfig":

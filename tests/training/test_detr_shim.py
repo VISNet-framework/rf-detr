@@ -376,6 +376,15 @@ class TestRFDETRTrainPTL:
         # get_train_config must have been called without device=
         assert "device" not in mock_self.get_train_config.call_args.kwargs
 
+    def test_skip_best_epochs_forwarded_to_get_train_config(self, tmp_path, patch_lit):
+        """Non-absorbed training kwargs must reach get_train_config unchanged."""
+        mock_self = _make_rfdetr_self(tmp_path)
+        p_mod, p_dm, p_bt, *_ = patch_lit
+        with p_mod, p_dm, p_bt:
+            RFDETR.train(mock_self, skip_best_epochs=3)
+
+        mock_self.get_train_config.assert_called_once_with(skip_best_epochs=3)
+
     def test_batch_size_auto_resolved_before_module_and_datamodule_build(self, tmp_path, patch_lit):
         """batch_size='auto' is resolved to ints before module/datamodule init."""
         mock_self = _make_rfdetr_self(tmp_path, batch_size="auto", grad_accum_steps=99)
@@ -904,7 +913,7 @@ class TestConvertLegacyCheckpoint:
         ckpt = torch.load(dst, map_location="cpu", weights_only=False)
 
         class _FakeModule:
-            pass
+            model_config = SimpleNamespace(positional_encoding_size=36)
 
         fake = _FakeModule()
         original_state_dict = dict(ckpt["state_dict"])  # copy before mutation
@@ -943,6 +952,8 @@ class TestConvertLegacyCheckpoint:
 
 class _FakeModule:
     """Minimal object supporting attribute assignment for on_load_checkpoint tests."""
+
+    model_config = SimpleNamespace(positional_encoding_size=36)
 
 
 class TestOnLoadCheckpoint:
@@ -1288,6 +1299,34 @@ class TestRFDETRLargeFallback:
         assert call_count == 1, (
             f"Expected no deprecated-config retry when resolution= is set, but __init__ was called {call_count} times."
         )
+
+    def test_retry_reraises_only_first_error(self, monkeypatch, patch_lit):
+        """When both attempts fail, re-raise only the first compatibility error without exception chaining."""
+        call_count = 0
+
+        def _raise_patch_size_mismatch(_self, **_kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise ValueError(
+                    "The checkpoint was trained with patch_size=14, but the current model uses patch_size=12."
+                )
+            raise ValueError("The checkpoint was trained with patch_size=16, but the current model uses patch_size=12.")
+
+        monkeypatch.setattr(RFDETR, "__init__", _raise_patch_size_mismatch)
+        warn_spy = MagicMock()
+        exception_spy = MagicMock()
+        monkeypatch.setattr("rfdetr.variants.logger.warning", warn_spy)
+        monkeypatch.setattr("rfdetr.variants.logger.exception", exception_spy)
+
+        with pytest.raises(ValueError, match=r"patch_size=14.*patch_size=12") as exc_info:
+            RFDETRLarge(resolution=704)
+
+        assert call_count == 2
+        assert "patch_size=16" not in str(exc_info.value)
+        assert exc_info.value.__suppress_context__ is True
+        warn_spy.assert_not_called()
+        exception_spy.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

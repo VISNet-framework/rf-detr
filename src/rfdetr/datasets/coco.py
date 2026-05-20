@@ -325,6 +325,10 @@ def _build_train_resize_config(
     - **Option B** – resize to an intermediate scale (400/500/600 px), crop,
       then resize to the target scale.
 
+    Divisibility padding (rounding ``H``/``W`` up to a multiple of
+    ``patch_size * num_windows``) is handled by the batch collator via
+    :func:`~rfdetr.utilities.tensors.make_collate_fn`, not here.
+
     Args:
         scales: Target resize scales in pixels.
         square: If ``True``, produce square output using ``A.Resize``
@@ -439,6 +443,15 @@ def make_coco_transforms(
     Returns:
         A :class:`torchvision.transforms.v2.Compose` pipeline ready to be passed
         to :class:`CocoDetection`.
+
+        .. note::
+            This pipeline does **not** guarantee that output ``H`` and ``W`` are
+            divisible by ``patch_size * num_windows``.  Divisibility is enforced
+            at the batch level by the DataLoader collate function.  If you apply
+            these transforms outside of :class:`~rfdetr.training.module_data.RFDETRDataModule`,
+            pass the result through :func:`~rfdetr.utilities.tensors.nested_tensor_from_tensor_list`
+            with ``block_size=patch_size * num_windows``, or use
+            :func:`~rfdetr.utilities.tensors.make_collate_fn` with that value.
 
     Raises:
         ValueError: If ``image_set`` is not one of the recognised split names.
@@ -596,21 +609,13 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
     include_masks = getattr(args, "segmentation_head", False)
     aug_config = getattr(args, "aug_config", None)
     augmentation_backend = getattr(args, "augmentation_backend", "cpu")
-    resolved_augmentation_backend = augmentation_backend
-    if include_masks and augmentation_backend != "cpu":
+    resolved_augmentation_backend = _resolve_runtime_augmentation_backend(augmentation_backend)
+    if resolved_augmentation_backend != augmentation_backend and resolved_augmentation_backend == "cpu":
         logger.warning(
-            "Segmentation training does not currently support GPU postprocess transforms; "
-            "forcing augmentation_backend='cpu' to retain CPU transforms and normalization."
+            "augmentation_backend='auto' resolved to 'cpu' because CUDA or kornia is unavailable; "
+            "disabling GPU postprocess transforms and retaining CPU normalization."
         )
-        resolved_augmentation_backend = "cpu"
-    if resolved_augmentation_backend != "cpu":
-        resolved_augmentation_backend = _resolve_runtime_augmentation_backend(resolved_augmentation_backend)
-        if resolved_augmentation_backend == "cpu":
-            logger.warning(
-                "augmentation_backend='auto' resolved to 'cpu' because CUDA or kornia is unavailable; "
-                "disabling GPU postprocess transforms and retaining CPU normalization."
-            )
-    gpu_postprocess = resolved_augmentation_backend != "cpu" and not include_masks
+    gpu_postprocess = resolved_augmentation_backend != "cpu"
 
     if square_resize_div_64:
         logger.info(f"Building COCO {image_set} dataset with square resize at resolution {resolution}")
@@ -692,7 +697,7 @@ def build_roboflow_from_coco(image_set: str, args: Any, resolution: int) -> Coco
     num_windows = getattr(args, "num_windows", 4)
     aug_config = getattr(args, "aug_config", None)
     resolved_augmentation_backend = _resolve_runtime_augmentation_backend(getattr(args, "augmentation_backend", "cpu"))
-    gpu_postprocess = resolved_augmentation_backend != "cpu" and not include_masks
+    gpu_postprocess = resolved_augmentation_backend != "cpu"
 
     if square_resize_div_64:
         logger.info(f"Building Roboflow {image_set} dataset with square resize at resolution {resolution}")
