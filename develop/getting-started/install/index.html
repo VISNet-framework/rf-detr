@@ -6,19 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Train RF-DETR detection and segmentation models on custom datasets. Supports COCO and YOLO formats with one-line Python API and PyTorch Lightning.">
+        <meta name="description" content="Install RF-DETR via pip, uv, or from source. Set up a development environment for contributing to Roboflow's real-time detection transformer.">
       
       
         <meta name="author" content="Roboflow">
       
       
-        <link rel="canonical" href="https://rfdetr.roboflow.com/develop/learn/train/">
+        <link rel="canonical" href="https://rfdetr.roboflow.com/develop/getting-started/install/">
       
       
-        <link rel="prev" href="../pretrained/">
+        <link rel="prev" href="../..">
       
       
-        <link rel="next" href="dataset-formats/">
+        <link rel="next" href="../migration/">
       
       
         
@@ -31,7 +31,7 @@
   
     
       
-        <title>Overview - RF-DETR</title>
+        <title>Install - RF-DETR</title>
       
     
   
@@ -72,10 +72,10 @@
   
   
   
-  <meta property="og:title" content="Overview - RF-DETR">
-  <meta property="og:description" content="Train RF-DETR detection and segmentation models on custom datasets. Supports COCO and YOLO formats with one-line Python API and PyTorch Lightning.">
+  <meta property="og:title" content="Install - RF-DETR">
+  <meta property="og:description" content="Install RF-DETR via pip, uv, or from source. Set up a development environment for contributing to Roboflow's real-time detection transformer.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://rfdetr.roboflow.com/develop/learn/train/">
+  <meta property="og:url" content="https://rfdetr.roboflow.com/develop/getting-started/install/">
   <meta property="og:image" content="https://storage.googleapis.com/com-roboflow-marketing/rf-detr/rf_detr_1-4_latency_accuracy_object_detection.png">
   <meta property="og:image:width" content="840">
   <meta property="og:image:height" content="630">
@@ -83,34 +83,34 @@
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@roboflow">
-  <meta name="twitter:title" content="Overview - RF-DETR">
-  <meta name="twitter:description" content="Train RF-DETR detection and segmentation models on custom datasets. Supports COCO and YOLO formats with one-line Python API and PyTorch Lightning.">
+  <meta name="twitter:title" content="Install - RF-DETR">
+  <meta name="twitter:description" content="Install RF-DETR via pip, uv, or from source. Set up a development environment for contributing to Roboflow's real-time detection transformer.">
   <meta name="twitter:image" content="https://storage.googleapis.com/com-roboflow-marketing/rf-detr/rf_detr_1-4_latency_accuracy_object_detection.png">
 
   
   
   
   
-  <meta property="article:modified_time" content="2026-04-24T21:56:09">
+  <meta property="article:modified_time" content="2026-04-21T10:10:10">
   
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Overview",
-    "description": "Train RF-DETR detection and segmentation models on custom datasets. Supports COCO and YOLO formats with one-line Python API and PyTorch Lightning.",
-    "url": "https://rfdetr.roboflow.com/develop/learn/train/",
+    "headline": "Install",
+    "description": "Install RF-DETR via pip, uv, or from source. Set up a development environment for contributing to Roboflow\u0027s real-time detection transformer.",
+    "url": "https://rfdetr.roboflow.com/develop/getting-started/install/",
     "isPartOf": {"@id": "https://rfdetr.roboflow.com/develop#website"},
     "about": {"@id": "https://rfdetr.roboflow.com/develop#software"},
     "proficiencyLevel": "Beginner to advanced",
     "inLanguage": "en",
     "keywords": "RF-DETR, rfdetr, object detection, instance segmentation, computer vision, Roboflow",
     "datePublished": "2025-03-01",
-    "dateModified": "2026-04-24T21:56:09",
+    "dateModified": "2026-04-21T10:10:10",
     "image": "https://storage.googleapis.com/com-roboflow-marketing/rf-detr/rf_detr_1-4_latency_accuracy_object_detection.png",
     "author": {"@type": "Organization", "name": "Roboflow", "url": "https://roboflow.com"},
     "publisher": {"@type": "Organization", "name": "Roboflow", "url": "https://roboflow.com"},
-    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://rfdetr.roboflow.com/develop/learn/train/"},
+    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://rfdetr.roboflow.com/develop/getting-started/install/"},
     "speakable": {
       "@type": "SpeakableSpecification",
       "cssSelector": [".md-content h1", ".md-typeset > p:first-child"]
@@ -132,14 +132,14 @@
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Train Model",
-        "item": "https://rfdetr.roboflow.com/develop/learn/train/"
+        "name": "Getting Started",
+        "item": "https://rfdetr.roboflow.com/develop/getting-started/install/"
       },
       {
         "@type": "ListItem",
         "position": 3,
-        "name": "Overview",
-        "item": "https://rfdetr.roboflow.com/develop/learn/train/"
+        "name": "Install",
+        "item": "https://rfdetr.roboflow.com/develop/getting-started/install/"
       }
       
     ]
@@ -160,7 +160,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#train-an-rf-detr-model" class="md-skip">
+        <a href="#installation" class="md-skip">
           Skip to content
         </a>
       
@@ -228,7 +228,7 @@
 
             </a>
             
-              Overview
+              Install
             
           </span>
         </div>
@@ -411,11 +411,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../getting-started/install/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -431,8 +433,6 @@
   
   
   
-    
-  
   
     
     
@@ -440,13 +440,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../run/detection/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../learn/run/detection/" class="md-tabs__link">
           
   
   
@@ -619,26 +617,29 @@
       
   
   
+    
   
   
+  
     
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -656,7 +657,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -671,10 +672,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../getting-started/install/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -690,6 +718,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Methods
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dev Environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -702,7 +794,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/migration/" class="md-nav__link">
+      <a href="../migration/" class="md-nav__link">
         
   
   
@@ -734,29 +826,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -774,7 +863,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -844,7 +933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../run/detection/" class="md-nav__link">
+      <a href="../../learn/run/detection/" class="md-nav__link">
         
   
   
@@ -872,7 +961,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../run/segmentation/" class="md-nav__link">
+      <a href="../../learn/run/segmentation/" class="md-nav__link">
         
   
   
@@ -900,7 +989,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pretrained/" class="md-nav__link">
+      <a href="../../learn/pretrained/" class="md-nav__link">
         
   
   
@@ -933,8 +1022,6 @@
                 
   
   
-    
-  
   
   
     
@@ -945,11 +1032,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
           
           <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
@@ -970,7 +1059,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -985,37 +1074,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../learn/train/" class="md-nav__link">
         
   
   
@@ -1031,136 +1093,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#training-paths" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Training paths
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dataset-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dataset Format
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#training-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Training Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-topics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Advanced Topics
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-training-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Training API
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#training-loggers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Training Loggers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#result-checkpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Result Checkpoints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#load-and-run-fine-tuned-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load and Run Fine-Tuned Model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1173,7 +1105,7 @@
   
   
     <li class="md-nav__item">
-      <a href="dataset-formats/" class="md-nav__link">
+      <a href="../../learn/train/dataset-formats/" class="md-nav__link">
         
   
   
@@ -1201,7 +1133,7 @@
   
   
     <li class="md-nav__item">
-      <a href="training-parameters/" class="md-nav__link">
+      <a href="../../learn/train/training-parameters/" class="md-nav__link">
         
   
   
@@ -1229,7 +1161,7 @@
   
   
     <li class="md-nav__item">
-      <a href="advanced/" class="md-nav__link">
+      <a href="../../learn/train/advanced/" class="md-nav__link">
         
   
   
@@ -1257,7 +1189,7 @@
   
   
     <li class="md-nav__item">
-      <a href="customization/" class="md-nav__link">
+      <a href="../../learn/train/customization/" class="md-nav__link">
         
   
   
@@ -1285,7 +1217,7 @@
   
   
     <li class="md-nav__item">
-      <a href="augmentations/" class="md-nav__link">
+      <a href="../../learn/train/augmentations/" class="md-nav__link">
         
   
   
@@ -1313,7 +1245,7 @@
   
   
     <li class="md-nav__item">
-      <a href="loggers/" class="md-nav__link">
+      <a href="../../learn/train/loggers/" class="md-nav__link">
         
   
   
@@ -1349,7 +1281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../export/" class="md-nav__link">
+      <a href="../../learn/export/" class="md-nav__link">
         
   
   
@@ -1377,7 +1309,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deploy/" class="md-nav__link">
+      <a href="../../learn/deploy/" class="md-nav__link">
         
   
   
@@ -1405,7 +1337,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../benchmarks/" class="md-nav__link">
+      <a href="../../learn/benchmarks/" class="md-nav__link">
         
   
   
@@ -2288,10 +2220,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#training-paths" class="md-nav__link">
+  <a href="#installation-methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Training paths
+        Installation Methods
       
     </span>
   </a>
@@ -2299,10 +2231,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
+  <a href="#dev-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Start
+        Dev Environment
       
     </span>
   </a>
@@ -2310,10 +2242,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dataset-format" class="md-nav__link">
+  <a href="#additional-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dataset Format
+        Additional Notes
       
     </span>
   </a>
@@ -2321,76 +2253,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#training-configuration" class="md-nav__link">
+  <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Training Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-topics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Advanced Topics
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-training-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Training API
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#training-loggers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Training Loggers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#result-checkpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Result Checkpoints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#load-and-run-fine-tuned-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load and Run Fine-Tuned Model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
+        Troubleshooting
       
     </span>
   </a>
@@ -2417,187 +2283,89 @@
   
 
 
-<h1 id="train-an-rf-detr-model">Train an RF-DETR Model<a class="headerlink" href="#train-an-rf-detr-model" title="Permanent link">&para;</a></h1>
-<div class="admonition tip">
-<p class="admonition-title">Key Takeaways</p>
-<ul>
-<li>Train detection or segmentation models with a single <code>model.train(dataset_dir=...)</code> call</li>
-<li>Supports both COCO JSON and YOLO dataset formats with automatic detection</li>
-<li>Fine-tune from COCO-pretrained checkpoints (Nano to 2XLarge) for fastest convergence</li>
-<li>Built on PyTorch Lightning — use the high-level API or access PTL primitives directly for full control</li>
-<li>EMA weights, early stopping, and best-model checkpointing are included by default</li>
-</ul>
-</div>
-<p>You can train RF-DETR object detection and segmentation models on a custom dataset using the <code>rfdetr</code> Python package, or in the cloud using Roboflow.</p>
-<p>This guide describes how to train both an object detection and segmentation RF-DETR model.</p>
-<h2 id="training-paths">Training paths<a class="headerlink" href="#training-paths" title="Permanent link">&para;</a></h2>
-<p>RF-DETR provides two training paths:</p>
-<table>
-<thead>
-<tr>
-<th>Path</th>
-<th>When to use</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code>RFDETR.train()</code></strong> (this page)</td>
-<td>Quickstart, fine-tuning with standard options, Colab notebooks. One call sets up and runs everything.</td>
-</tr>
-<tr>
-<td><strong><a href="customization/">Custom Training API</a></strong></td>
-<td>Custom callbacks, alternative loggers, multi-GPU strategies, integration with external frameworks, or any other customisation of the training loop.</td>
-</tr>
-</tbody>
-</table>
-<p>Both paths run the same underlying PyTorch Lightning stack. <code>RFDETR.train()</code> constructs <code>RFDETRModelModule</code>, <code>RFDETRDataModule</code>, and a <code>Trainer</code> internally; the Lightning API page shows how to do the same thing explicitly so you can modify each component.</p>
-<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
-<p>RF-DETR supports training on datasets in both <strong>COCO</strong> and <strong>YOLO</strong> formats. The format is automatically detected based on the structure of your dataset directory.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Object Detection</label><label for="__tabbed_1_2">Image Segmentation</label></div>
+<h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
+<p>Welcome to RF-DETR! This guide will help you install and set up RF-DETR for your projects. Whether you're a developer looking to contribute or an end-user ready to start using RF-DETR, we've got you covered.</p>
+<h2 id="installation-methods">Installation Methods<a class="headerlink" href="#installation-methods" title="Permanent link">&para;</a></h2>
+<p>RF-DETR supports several installation methods. Choose the option which best fits your workflow.</p>
+<div class="admonition example">
+<p class="admonition-title">Installation</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">pip (recommended)</label><label for="__tabbed_1_2">uv</label><label for="__tabbed_1_3">Source Archive</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">rfdetr</span><span class="w"> </span><span class="kn">import</span> <span class="n">RFDETRMedium</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">RFDETRMedium</span><span class="p">()</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">dataset_dir</span><span class="o">=</span><span class="s2">&quot;&lt;DATASET_PATH&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">grad_accum_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;&lt;OUTPUT_PATH&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
+<p>The easiest way to install RF-DETR is using <code>pip</code>. This method is recommended for most users.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>rfdetr
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">rfdetr</span><span class="w"> </span><span class="kn">import</span> <span class="n">RFDETRSegMedium</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">RFDETRSegMedium</span><span class="p">()</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">dataset_dir</span><span class="o">=</span><span class="s2">&quot;&lt;DATASET_PATH&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">grad_accum_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;&lt;OUTPUT_PATH&gt;&quot;</span><span class="p">,</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">)</span>
+<p>If you are using <code>uv</code>, you can install RF-DETR using the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>rfdetr
+</span></code></pre></div>
+<p>For <code>uv</code> projects, you can also use:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>add<span class="w"> </span>rfdetr
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>To install the latest development version of RF-DETR from source without cloning the full repository, run the command below.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>https://github.com/roboflow/rf-detr/archive/refs/heads/develop.zip
 </span></code></pre></div>
 </div>
 </div>
 </div>
-<p>Different GPUs have different VRAM capacities, so adjust batch_size and grad_accum_steps to maintain a total batch size of 16. For example, on a powerful GPU like the A100, use <code>batch_size=16</code> and <code>grad_accum_steps=1</code>; on smaller GPUs like the T4, use <code>batch_size=4</code> and <code>grad_accum_steps=4</code>. This gradient accumulation strategy helps train effectively even with limited memory.</p>
-<p>For object detection, the RF-DETR-B checkpoint is used by default. To get started quickly with training an object detection model, please refer to our fine-tuning Google Colab <a href="https://colab.research.google.com/github/roboflow-ai/notebooks/blob/main/notebooks/how-to-finetune-rf-detr-on-detection-dataset.ipynb">notebook</a>.</p>
-<h2 id="dataset-format">Dataset Format<a class="headerlink" href="#dataset-format" title="Permanent link">&para;</a></h2>
-<p>RF-DETR <strong>automatically detects</strong> whether your dataset is in COCO or YOLO format. Simply pass your dataset directory to the <code>train()</code> method and the appropriate data loader will be used.</p>
-<table>
-<thead>
-<tr>
-<th>Format</th>
-<th>Detection Method</th>
-<th>Learn More</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>COCO</strong></td>
-<td>Looks for <code>train/_annotations.coco.json</code></td>
-<td><a href="dataset-formats/#coco-format">COCO Format Guide</a></td>
-</tr>
-<tr>
-<td><strong>YOLO</strong></td>
-<td>Looks for <code>data.yaml</code> + <code>train/images/</code></td>
-<td><a href="dataset-formats/#yolo-format">YOLO Format Guide</a></td>
-</tr>
-</tbody>
-</table>
-<p><a href="https://roboflow.com/annotate">Roboflow</a> allows you to create object detection datasets from scratch and export them in either COCO JSON or YOLO format for training. You can also explore <a href="https://universe.roboflow.com/">Roboflow Universe</a> to find pre-labeled datasets for a range of use cases.</p>
-<p>→ <strong><a href="dataset-formats/">Learn more about dataset formats</a></strong></p>
-<h2 id="training-configuration">Training Configuration<a class="headerlink" href="#training-configuration" title="Permanent link">&para;</a></h2>
-<p>RF-DETR provides many configuration options to customize your training run. See the complete reference for all available parameters.</p>
-<p>→ <strong><a href="training-parameters/">View all training parameters</a></strong></p>
-<h2 id="advanced-topics">Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="advanced/#resume-training">Resume training</a> from a checkpoint</li>
-<li><a href="advanced/#early-stopping">Early stopping</a> to prevent overfitting</li>
-<li><a href="advanced/#multi-gpu-training">Multi-GPU training</a> with PyTorch Lightning DDP</li>
-<li><a href="augmentations/">Custom augmentations with Albumentations</a> - Dedicated guide</li>
-<li><a href="advanced/#memory-optimization">Memory optimization</a> with gradient checkpointing</li>
-</ul>
-<p>→ <strong><a href="advanced/">Learn more about advanced training</a></strong></p>
-<h2 id="custom-training-api">Custom Training API<a class="headerlink" href="#custom-training-api" title="Permanent link">&para;</a></h2>
-<p>RF-DETR's training stack is built on PyTorch Lightning. The <code>RFDETR.train()</code> call above constructs and runs PTL primitives internally. Use them directly when you need custom callbacks, non-default loggers, multi-GPU strategies, or full control over the training loop.</p>
-<p>→ <strong><a href="customization/">Custom Training API guide</a></strong></p>
-<h2 id="training-loggers">Training Loggers<a class="headerlink" href="#training-loggers" title="Permanent link">&para;</a></h2>
-<p>Track your experiments with popular logging platforms:</p>
-<ul>
-<li><a href="loggers/#tensorboard">TensorBoard</a> for local visualization</li>
-<li><a href="loggers/#weights-and-biases">Weights and Biases</a> for cloud-based tracking</li>
-<li><a href="loggers/#clearml">ClearML</a> workaround for SDK auto-binding</li>
-<li><a href="loggers/#mlflow">MLflow</a> for experiment lifecycle management</li>
-</ul>
-<p>→ <strong><a href="loggers/">Learn more about training loggers</a></strong></p>
-<h2 id="result-checkpoints">Result Checkpoints<a class="headerlink" href="#result-checkpoints" title="Permanent link">&para;</a></h2>
-<p>During training, multiple model checkpoints are saved to the output directory:</p>
-<ul>
-<li>
-<p><code>checkpoint.pth</code> – the most recent checkpoint, saved at the end of the latest epoch.</p>
-</li>
-<li>
-<p><code>checkpoint_&lt;number&gt;.pth</code> – periodic checkpoints saved every N epochs (default is every 10).</p>
-</li>
-<li>
-<p><code>checkpoint_best_ema.pth</code> – best checkpoint based on validation score, using the EMA (Exponential Moving Average) weights. EMA weights are a smoothed version of the model's parameters across training steps, often yielding better generalization.</p>
-</li>
-<li>
-<p><code>checkpoint_best_regular.pth</code> – best checkpoint based on validation score, using the raw (non-EMA) model weights.</p>
-</li>
-<li>
-<p><code>checkpoint_best_total.pth</code> – final checkpoint selected for inference and benchmarking. It contains only the model weights (no optimizer state or scheduler) and is chosen as the better of the EMA and non-EMA models based on validation performance.</p>
-</li>
-</ul>
-<details class="note">
-<summary>Checkpoint file sizes</summary>
-<p>Checkpoint sizes vary based on what they contain:</p>
-<ul>
-<li>
-<p><strong>Training checkpoints</strong> (e.g. <code>checkpoint.pth</code>, <code>checkpoint_&lt;number&gt;.pth</code>) include model weights, optimizer state, scheduler state, and training metadata. Use these to resume training.</p>
-</li>
-<li>
-<p><strong>Evaluation checkpoints</strong> (e.g. <code>checkpoint_best_ema.pth</code>, <code>checkpoint_best_regular.pth</code>) store only the model weights — either EMA or raw — and are used to track the best-performing models. These may come from different epochs depending on which version achieved the highest validation score.</p>
-</li>
-<li>
-<p><strong>Stripped checkpoint</strong> (e.g. <code>checkpoint_best_total.pth</code>) contains only the final model weights and is optimized for inference and deployment.</p>
-</li>
-</ul>
-</details>
-<h2 id="load-and-run-fine-tuned-model">Load and Run Fine-Tuned Model<a class="headerlink" href="#load-and-run-fine-tuned-model" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Object Detection</label><label for="__tabbed_2_2">Image Segmentation</label></div>
+</div>
+<h2 id="dev-environment">Dev Environment<a class="headerlink" href="#dev-environment" title="Permanent link">&para;</a></h2>
+<p>If you plan to contribute to RF-DETR or modify the codebase locally, set up a local development environment using the steps below.</p>
+<div class="admonition example">
+<p class="admonition-title">Development Setup</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">virtualenv</label><label for="__tabbed_2_2">uv</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">rfdetr</span><span class="w"> </span><span class="kn">import</span> <span class="n">RFDETRMedium</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">RFDETRMedium</span><span class="p">(</span><span class="n">pretrain_weights</span><span class="o">=</span><span class="s2">&quot;&lt;CHECKPOINT_PATH&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">detections</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;&lt;IMAGE_PATH&gt;&quot;</span><span class="p">)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Clone the repository and navigate to the root directory</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>-b<span class="w"> </span>develop<span class="w"> </span>https://github.com/roboflow/rf-detr.git
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">cd</span><span class="w"> </span>rf-detr
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Set up a Python virtual environment with a specific Python version (e.g., 3.10)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>python3.10<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># Activate the virtual environment</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># Upgrade pip</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="c1"># Install the package in development mode</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.&quot;</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">rfdetr</span><span class="w"> </span><span class="kn">import</span> <span class="n">RFDETRSegMedium</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">RFDETRSegMedium</span><span class="p">(</span><span class="n">pretrain_weights</span><span class="o">=</span><span class="s2">&quot;&lt;CHECKPOINT_PATH&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">detections</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;&lt;IMAGE_PATH&gt;&quot;</span><span class="p">)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Clone the repository and navigate to the root directory</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>-b<span class="w"> </span>develop<span class="w"> </span>https://github.com/roboflow/rf-detr.git
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nb">cd</span><span class="w"> </span>rf-detr
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Pin Python version (optional but recommended)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>uv<span class="w"> </span>python<span class="w"> </span>pin<span class="w"> </span><span class="m">3</span>.11
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># Sync environment (creates .venv, installs pinned Python, and installs dependencies)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>uv<span class="w"> </span>sync
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># Install the package in development mode with all extras</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--all-extras
 </span></code></pre></div>
 </div>
 </div>
 </div>
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<p>After training your model, you can:</p>
+</div>
+<h2 id="additional-notes">Additional Notes<a class="headerlink" href="#additional-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../export/">Export your model to ONNX</a> for deployment with various inference frameworks</li>
-<li><a href="../deploy/">Deploy to Roboflow</a> for cloud-based inference and workflow integration</li>
+<li>Ensure you have Python 3.10 or higher installed.</li>
+<li>For development, it is recommended to use a virtual environment to avoid conflicts with other packages.</li>
+<li>If you encounter any issues during installation, refer to the <a href="#troubleshooting">troubleshooting</a> section or open an issue on the <a href="https://github.com/roboflow/rf-detr">GitHub repository</a>.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<p>If you encounter any issues during installation, here are some common solutions:</p>
+<ul>
+<li><strong>Permission Issues</strong>: Use <code>pip install --user rfdetr</code> to install the package for your user only.</li>
+<li><strong>Dependency Conflicts</strong>: Use a virtual environment to isolate the installation.</li>
+<li><strong>Python Version</strong>: Ensure you are using Python 3.10 or higher.</li>
 </ul>
 
 
@@ -2619,7 +2387,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_datetime" title="April 24, 2026 21:56:09 UTC">2026-04-24 21:56:09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_datetime" title="April 21, 2026 10:10:10 UTC">2026-04-21 10:10:10</span>
   </span>
 
     

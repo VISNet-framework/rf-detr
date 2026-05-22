@@ -6,19 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="RF-DETR tutorials for training, deploying, and running detection and segmentation models across cloud, edge, iOS, Jetson, and Lightning workflows.">
+        <meta name="description" content="Practical RF-DETR cookbooks — runnable notebooks covering training, fine-tuning, export, and deployment workflows.">
       
       
         <meta name="author" content="Roboflow">
       
       
-        <link rel="canonical" href="https://rfdetr.roboflow.com/develop/tutorials/">
+        <link rel="canonical" href="https://rfdetr.roboflow.com/develop/cookbooks/">
       
       
         <link rel="prev" href="../reference/training/">
       
       
-        <link rel="next" href="../changelog/">
+        <link rel="next" href="../resources/">
       
       
         
@@ -31,7 +31,7 @@
   
     
       
-        <title>Tutorials - RF-DETR</title>
+        <title>Cookbooks - RF-DETR</title>
       
     
   
@@ -44,8 +44,13 @@
 
     
     
+
       
     
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+<link rel="stylesheet" href="../stylesheets/cookbooks_card.css">
+<script src="../javascripts/cookbooks-card.js"></script>
+
     
       
         
@@ -72,10 +77,10 @@
   
   
   
-  <meta property="og:title" content="Tutorials - RF-DETR">
-  <meta property="og:description" content="RF-DETR tutorials for training, deploying, and running detection and segmentation models across cloud, edge, iOS, Jetson, and Lightning workflows.">
+  <meta property="og:title" content="Cookbooks - RF-DETR">
+  <meta property="og:description" content="Practical RF-DETR cookbooks — runnable notebooks covering training, fine-tuning, export, and deployment workflows.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://rfdetr.roboflow.com/develop/tutorials/">
+  <meta property="og:url" content="https://rfdetr.roboflow.com/develop/cookbooks/">
   <meta property="og:image" content="https://storage.googleapis.com/com-roboflow-marketing/rf-detr/rf_detr_1-4_latency_accuracy_object_detection.png">
   <meta property="og:image:width" content="840">
   <meta property="og:image:height" content="630">
@@ -83,33 +88,34 @@
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@roboflow">
-  <meta name="twitter:title" content="Tutorials - RF-DETR">
-  <meta name="twitter:description" content="RF-DETR tutorials for training, deploying, and running detection and segmentation models across cloud, edge, iOS, Jetson, and Lightning workflows.">
+  <meta name="twitter:title" content="Cookbooks - RF-DETR">
+  <meta name="twitter:description" content="Practical RF-DETR cookbooks — runnable notebooks covering training, fine-tuning, export, and deployment workflows.">
   <meta name="twitter:image" content="https://storage.googleapis.com/com-roboflow-marketing/rf-detr/rf_detr_1-4_latency_accuracy_object_detection.png">
 
   
   
   
-  <meta property="article:modified_time" content="<spanTclass="git-revision-date-localized-pluginTgit-revision-date-localized-plugin-iso_datetime"Ttitle="AprilT23,T2026T15:22:59TUTC">2026-04-23T15:22:59</span>+00:00">
+  
+  <meta property="article:modified_time" content="2026-05-07T20:47:26">
   
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "Tutorials",
-    "description": "RF-DETR tutorials for training, deploying, and running detection and segmentation models across cloud, edge, iOS, Jetson, and Lightning workflows.",
-    "url": "https://rfdetr.roboflow.com/develop/tutorials/",
+    "headline": "Cookbooks",
+    "description": "Practical RF-DETR cookbooks \u2014 runnable notebooks covering training, fine-tuning, export, and deployment workflows.",
+    "url": "https://rfdetr.roboflow.com/develop/cookbooks/",
     "isPartOf": {"@id": "https://rfdetr.roboflow.com/develop#website"},
     "about": {"@id": "https://rfdetr.roboflow.com/develop#software"},
     "proficiencyLevel": "Beginner to advanced",
     "inLanguage": "en",
     "keywords": "RF-DETR, rfdetr, object detection, instance segmentation, computer vision, Roboflow",
     "datePublished": "2025-03-01",
-    "dateModified": "\u003cspanTclass=\"git-revision-date-localized-pluginTgit-revision-date-localized-plugin-iso_datetime\"Ttitle=\"AprilT23,T2026T15:22:59TUTC\"\u003e2026-04-23T15:22:59\u003c/span\u003e+00:00",
+    "dateModified": "2026-05-07T20:47:26",
     "image": "https://storage.googleapis.com/com-roboflow-marketing/rf-detr/rf_detr_1-4_latency_accuracy_object_detection.png",
     "author": {"@type": "Organization", "name": "Roboflow", "url": "https://roboflow.com"},
     "publisher": {"@type": "Organization", "name": "Roboflow", "url": "https://roboflow.com"},
-    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://rfdetr.roboflow.com/develop/tutorials/"},
+    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://rfdetr.roboflow.com/develop/cookbooks/"},
     "speakable": {
       "@type": "SpeakableSpecification",
       "cssSelector": [".md-content h1", ".md-typeset > p:first-child"]
@@ -131,8 +137,8 @@
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Tutorials",
-        "item": "https://rfdetr.roboflow.com/develop/tutorials/"
+        "name": "Cookbooks",
+        "item": "https://rfdetr.roboflow.com/develop/cookbooks/"
       }
       
     ]
@@ -151,11 +157,6 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#tutorials" class="md-skip">
-          Skip to content
-        </a>
       
     </div>
     <div data-md-component="announce">
@@ -221,7 +222,7 @@
 
             </a>
             
-              Tutorials
+              Cookbooks
             
           </span>
         </div>
@@ -408,7 +409,34 @@
     
     
       <li class="md-tabs__item">
-        <a href="../learn/install/" class="md-tabs__link">
+        <a href="../getting-started/install/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../learn/run/detection/" class="md-tabs__link">
           
   
   
@@ -416,6 +444,9 @@
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -454,7 +485,26 @@
   
     
   
-  Tutorials
+  Cookbooks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../resources/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Resources
 
       </a>
     </li>
@@ -589,7 +639,7 @@
   <span class="md-ellipsis">
     
   
-    How to
+    Getting Started
   
 
     
@@ -605,7 +655,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    How to
+    Getting Started
   
 
           </label>
@@ -618,7 +668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../learn/install/" class="md-nav__link">
+      <a href="../getting-started/install/" class="md-nav__link">
         
   
   
@@ -646,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../learn/migration/" class="md-nav__link">
+      <a href="../getting-started/migration/" class="md-nav__link">
         
   
   
@@ -666,6 +716,65 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How to
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -687,10 +796,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_1" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
             
   
   
@@ -708,8 +817,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -831,10 +940,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
             
   
   
@@ -852,8 +961,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1178,10 +1287,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
@@ -1199,8 +1308,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1258,10 +1367,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
             
   
   
@@ -1279,8 +1388,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1486,10 +1595,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
@@ -1507,8 +1616,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1714,10 +1823,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
@@ -1735,8 +1844,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1830,10 +1939,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -1851,8 +1960,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1918,8 +2027,6 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
-        
-      
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -1928,7 +2035,7 @@
   <span class="md-ellipsis">
     
   
-    Tutorials
+    Cookbooks
   
 
     
@@ -1938,6 +2045,33 @@
 
       </a>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1988,8 +2122,6 @@
   
   
   
-    
-  
   
 </nav>
                   </div>
@@ -2002,120 +2134,36 @@
               
               <article class="md-content__inner md-typeset">
                 
-                  
-  
-
-
-
-  
-  
-
-
-<h1 id="tutorials">Tutorials<a class="headerlink" href="#tutorials" title="Permanent link">&para;</a></h1>
-<p>Use the resources below to learn how to train, build with, and deploy RF-DETR models both in the cloud and on your own hardware.</p>
-<div class="grid cards">
-<ul>
-<li>
-<p><strong>SOTA Instance Segmentation with RF-DETR Seg (Preview) [October 2025]</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/10/rfdetr-seg.png" /></p>
-<p>Read more about the RF-DETR Segmentation architecture and how to train an RF-DETR Seg (Preview) model.</p>
-<p><a href="https://blog.roboflow.com/rf-detr-segmentation-preview/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Learn more</a></p>
-</li>
-<li>
-<p><strong>Announcing RF-DETR Nano, Small, and Medium [July 2025]</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/07/img-blog-rf-detr-1.png" /></p>
-<p>Read more about the state-of-the-art RF-DETR Nano, Small, and Medium models we released in July 2025.</p>
-<p><a href="https://blog.roboflow.com/rf-detr-nano-small-medium/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Learn more</a></p>
-</li>
-<li>
-<p><strong>RF-DETR: How to Train SOTA for Object Detection on a Custom Dataset [video]</strong></p>
-<hr />
-<p><img alt="" src="https://i.ytimg.com/vi/-OvpdLAElFA/maxresdefault.jpg" /></p>
-<p>Learn how to train an RF-DETR model on a custom dataset.</p>
-<p><a href="https://www.youtube.com/watch?v=-OvpdLAElFA"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Watch the video</a></p>
-</li>
-<li>
-<p><strong>How to Train RF-DETR on a Custom Dataset [article]</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/03/img-blog-how-to-send-slack-notification-workflows-v4-1.png" /></p>
-<p>Learn how to train an RF-DETR model on a custom dataset.</p>
-<p><a href="https://blog.roboflow.com/train-rf-detr-on-a-custom-dataset/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Read the guide</a></p>
-</li>
-<li>
-<p><strong>Deploy RF-DETR on iOS [tutorial &amp; example application]</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/07/img-blog-deep-learning-solves-frustrations--5--min.png" /></p>
-<p>Read this guide to learn how to run RF-DETR models on an iPhone using the Roboflow iOS SDK.</p>
-<p><a href="https://blog.roboflow.com/ios-rf-detr-nano/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Get started</a></p>
-</li>
-<li>
-<p><strong>How to Deploy RF-DETR to an NVIDIA Jetson [article]</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/06/inst-3-.png" /></p>
-<p>Learn how to deploy an RF-DETR model to an NVIDIA Jetson using Roboflow Inference.</p>
-<p><a href="https://blog.roboflow.com/how-to-deploy-rf-detr-to-an-nvidia-jetson/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Read the tutorial</a></p>
-</li>
-<li>
-<p><strong>Deploy RF-DETR with LitServe [Lightning AI Studio]</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/03/img-blog-nycerebro--2--min.png" />
-Learn how to deploy RF-DETR as a scalable inference server using LitServe, the AI model serving framework from Lightning AI.</p>
-<p><a href="https://lightning.ai/bhimrajyadav/studios/deploy-rf-detr-a-sota-real-time-object-detection-model-using-litserve"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Open the Studio</a></p>
-</li>
-<li>
-<p><strong>Train and Deploy RF-DETR Models with Roboflow</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/03/img-blog-nycerebro-2.png" /></p>
-<p>Learn how to train RF-DETR models in the cloud with Roboflow and deploy your models on your own hardware with Roboflow Inference and Workflows.</p>
-<p><a href="https://blog.roboflow.com/train-deploy-rf-detr/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Get started</a></p>
-</li>
-<li>
-<p><strong>RF-DETR: A SOTA Real-Time Object Detection Model</strong></p>
-<hr />
-<p><img alt="" src="https://blog.roboflow.com/content/images/size/w1000/format/webp/2025/03/img-blog-nycerebro--2--min.png" /></p>
-<p>Read our announcement for RF-DETR, the first real-time model to achieve 60+ mean Average Precision when benchmarked on the COCO dataset.</p>
-<p><a href="https://blog.roboflow.com/rf-detr/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Read the announcement</a></p>
-</li>
-</ul>
-</div>
-
-
-
-
-
-
-
-  
-    
-  
-  
-
-
-  <aside class="md-source-file">
-    
+<section class="mdx-container portfolio-section">
+  <div class="md-grid md-typeset">
+    <div class="text-center">
+      <h1>RF-DETR Cookbooks</h1>
+      <p class="cookbooks-subtitle">Runnable notebooks for training, fine-tuning, exporting, and deploying RF-DETR models.</p>
+    </div>
+    <div class="custom-grid">
       
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Last update">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
-    </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_datetime" title="April 23, 2026 15:22:59 UTC">2026-04-23 15:22:59</span>
-  </span>
+        <a href="release-demo_1-5/">
+          <div class="card repo-card"
+             data-name="Custom Augmentations and Live Training Progress"
+             data-labels="TRAINING,AUGMENTATION"
+             data-version="v1.5.0"
+             data-author="Borda"
+             data-description="Add custom Albumentations augmentations and monitor training metrics in real time."></div>
+        </a>
+      
+        <a href="release-demo_1-6/">
+          <div class="card repo-card"
+             data-name="PyTorch Lightning Building Blocks"
+             data-labels="TRAINING,PYTORCH LIGHTNING"
+             data-version="v1.6.0"
+             data-author="Borda"
+             data-description="Train RF-DETR with PyTorch Lightning — callbacks, checkpointing, and the LightningModule API."></div>
+        </a>
+      
+    </div>
+  </div>
+</section>
 
-    
-    
-    
-    
-  </aside>
-
-
-
-  
-
-
-
-                
               </article>
             </div>
           
