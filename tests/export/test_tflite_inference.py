@@ -40,15 +40,34 @@ _LABEL_OUTPUT = {"shape": [1, 10, 82], "name": "serving_default_labels:0", "inde
 
 
 def _make_boxes() -> np.ndarray:
-    """Return (1, 10, 4) array of normalised cxcywh boxes all centred at 0.5."""
+    """Return (1, 10, 4) array of normalised cxcywh boxes all centred at 0.5.
+
+    Examples:
+        >>> boxes = _make_boxes()
+        >>> boxes.shape
+        (1, 10, 4)
+        >>> float(boxes[0, 0, 0])
+        0.5
+    """
     return np.array([[[0.5, 0.5, 0.1, 0.1]] * 10], dtype=np.float32)
 
 
 def _make_logits(high_conf_idx: int | None = 0) -> np.ndarray:
     """Return (1, 10, 82) logits with one high-confidence entry when requested.
 
-    Background fill is -10.0 so sigmoid scores are near zero (~0.0001) for all entries except the explicitly boosted one
-    (logit=+10.0, sigmoid≈0.9999). This ensures the helper works correctly under per-class sigmoid scoring.
+    Low-confidence fill is -10.0 so sigmoid scores are near zero (~0.0001) for all entries except the explicitly boosted
+    one (logit=+10.0, sigmoid≈0.9999). This ensures the helper works correctly under per-class sigmoid scoring.
+
+    Examples:
+        >>> logits = _make_logits()
+        >>> logits.shape
+        (1, 10, 82)
+        >>> float(logits[0, 0, 0])
+        10.0
+        >>> float(logits[0, 1, 0])
+        -10.0
+        >>> float(_make_logits(high_conf_idx=None)[0, 0, 0])
+        -10.0
     """
     logits = np.full((1, 10, 82), -10.0, dtype=np.float32)
     if high_conf_idx is not None:
@@ -62,7 +81,15 @@ def _make_interp(
     boxes: np.ndarray | None = None,
     logits: np.ndarray | None = None,
 ) -> mock.MagicMock:
-    """Build a mock TFLite interpreter with configurable I/O details."""
+    """Build a mock TFLite interpreter with configurable I/O details.
+
+    Examples:
+        >>> interp = _make_interp()
+        >>> len(interp.get_input_details())
+        1
+        >>> len(interp.get_output_details())
+        2
+    """
     if input_shape is None:
         input_shape = _INPUT_SHAPE
     out_dets = out_dets if out_dets is not None else [_DET_OUTPUT, _LABEL_OUTPUT]
@@ -86,12 +113,32 @@ def _make_interp(
 
 
 def _save_rgb_image(path: Path, size: tuple[int, int] = (64, 64)) -> None:
-    """Write a small solid-colour RGB JPEG to *path*."""
+    """Write a small solid-colour RGB JPEG to *path*.
+
+    Examples:
+        >>> import tempfile
+        >>> from pathlib import Path
+        >>> with tempfile.TemporaryDirectory() as d:
+        ...     p = Path(d) / "img.jpg"
+        ...     _save_rgb_image(p)
+        ...     p.exists()
+        True
+    """
     PILImage.new("RGB", size, color=(100, 150, 200)).save(path)
 
 
 def _save_grayscale_image(path: Path, size: tuple[int, int] = (64, 64)) -> None:
-    """Write a small solid-colour grayscale PNG to *path*."""
+    """Write a small solid-colour grayscale PNG to *path*.
+
+    Examples:
+        >>> import tempfile
+        >>> from pathlib import Path
+        >>> with tempfile.TemporaryDirectory() as d:
+        ...     p = Path(d) / "img.png"
+        ...     _save_grayscale_image(p)
+        ...     p.exists()
+        True
+    """
     PILImage.new("L", size, color=128).save(path)
 
 
@@ -969,6 +1016,36 @@ class TestMaskDecoding:
 
 class TestBilinearResizeHalfPixel:
     """Tests for ``_bilinear_resize_half_pixel()``."""
+
+    def test_near_scale_ratio_uses_separable_horizontal_pass(self) -> None:
+        """Near-scale resizes interpolate source rows once before gathering output rows."""
+        src = np.arange(2 * 7 * 8, dtype=np.float32).reshape(2, 7, 8)
+
+        with mock.patch("rfdetr.export._resize.np.take", wraps=np.take) as take:
+            out = _bilinear_resize_half_pixel(src, 6, 5)
+
+        assert out.shape == (2, 6, 5)
+        assert take.call_count == 2
+
+    def test_large_downscale_retains_bounded_output_grid(self) -> None:
+        """Large height reductions avoid a separable intermediate proportional to the source height."""
+        src = np.arange(25 * 9, dtype=np.float32).reshape(1, 25, 9)
+
+        with mock.patch("rfdetr.export._resize.np.take", wraps=np.take) as take:
+            out = _bilinear_resize_half_pixel(src, 6, 5)
+
+        assert out.shape == (1, 6, 5)
+        take.assert_not_called()
+
+    def test_four_thirds_boundary_retains_output_grid(self) -> None:
+        """The exact 4:3 height boundary avoids the larger three-source-grid intermediate."""
+        src = np.arange(2 * 8 * 9, dtype=np.float32).reshape(2, 8, 9)
+
+        with mock.patch("rfdetr.export._resize.np.take", wraps=np.take) as take:
+            out = _bilinear_resize_half_pixel(src, 6, 5)
+
+        assert out.shape == (2, 6, 5)
+        take.assert_not_called()
 
     def test_output_shape(self) -> None:
         """Output shape is (K, out_h, out_w)."""

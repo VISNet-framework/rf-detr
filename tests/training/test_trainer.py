@@ -17,6 +17,7 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.callbacks import RichProgressBar, TQDMProgressBar
 
 from rfdetr.training import build_trainer
+from rfdetr.training.callbacks import GPUMemoryRichProgressBar, GPUMemoryTQDMProgressBar
 from rfdetr.training.module_data import RFDETRDataModule
 from rfdetr.training.module_model import RFDETRModelModule
 from rfdetr.utilities.logger import get_logger
@@ -29,7 +30,11 @@ from .helpers import _fake_postprocess, _FakeCriterion, _FakeDataset, _make_para
 
 
 class TestProgressBarCallbacks:
-    """build_trainer() must install the right progress bar callback for each mode."""
+    """build_trainer() must install the right progress bar callback for each mode.
+
+    The installed callbacks are the ``GPUMemory*`` subclasses (see ``gpu_memory_progress_bar.py``), so membership is
+    checked with ``isinstance`` against the base PTL classes rather than exact ``type(cb) in [...]`` matches.
+    """
 
     def test_rich_progress_bar_installed_for_rich(self, base_model_config, base_train_config):
         """progress_bar='rich' must add a RichProgressBar and no TQDMProgressBar."""
@@ -38,6 +43,7 @@ class TestProgressBarCallbacks:
         trainer = build_trainer(tc, mc, accelerator="cpu")
         assert any(isinstance(cb, RichProgressBar) for cb in trainer.callbacks)
         assert not any(isinstance(cb, TQDMProgressBar) for cb in trainer.callbacks)
+        assert any(isinstance(cb, GPUMemoryRichProgressBar) for cb in trainer.callbacks)
 
     def test_tqdm_progress_bar_installed_for_tqdm(self, base_model_config, base_train_config):
         """progress_bar='tqdm' must add a TQDMProgressBar and no RichProgressBar."""
@@ -46,6 +52,7 @@ class TestProgressBarCallbacks:
         trainer = build_trainer(tc, mc, accelerator="cpu")
         assert any(isinstance(cb, TQDMProgressBar) for cb in trainer.callbacks)
         assert not any(isinstance(cb, RichProgressBar) for cb in trainer.callbacks)
+        assert any(isinstance(cb, GPUMemoryTQDMProgressBar) for cb in trainer.callbacks)
 
     def test_progress_bar_refresh_rate_is_five(self, base_model_config, base_train_config):
         """The installed progress bar callback should refresh every five batches."""
@@ -77,6 +84,30 @@ class TestProgressBarCallbacks:
         assert not any(isinstance(cb, RichProgressBar) for cb in trainer.callbacks)
         assert not any(isinstance(cb, TQDMProgressBar) for cb in trainer.callbacks)
 
+    def test_disables_pre_training_sanity_validation(self, base_model_config, base_train_config):
+        """RF-DETR training should start directly with the first training epoch."""
+        trainer = build_trainer(base_train_config(), base_model_config(), accelerator="cpu")
+
+        assert trainer.num_sanity_val_steps == 0
+
+    def test_num_sanity_val_steps_is_configurable(self, base_model_config, base_train_config):
+        """TrainConfig.num_sanity_val_steps should reach the underlying Trainer unchanged."""
+        tc = base_train_config(num_sanity_val_steps=2)
+        trainer = build_trainer(tc, base_model_config(), accelerator="cpu")
+
+        assert trainer.num_sanity_val_steps == 2
+
+    def test_num_sanity_val_steps_kwarg_overrides_disabled_default(self, base_model_config, base_train_config):
+        """A caller-supplied ``num_sanity_val_steps`` kwarg must survive the trainer_config.update() merge.
+
+        build_trainer() disables sanity validation by default (see the previous test). A caller that explicitly wants
+        sanity validation back must be able to re-enable it via ``**trainer_kwargs``, the same override mechanism used
+        for other PTL-native flags like ``fast_dev_run``.
+        """
+        trainer = build_trainer(base_train_config(), base_model_config(), accelerator="cpu", num_sanity_val_steps=2)
+
+        assert trainer.num_sanity_val_steps == 2
+
 
 # ---------------------------------------------------------------------------
 # TestRichProgressBarLoggerIntegration — the real regression _RedirectAwareStreamHandler
@@ -91,8 +122,9 @@ class TestRichProgressBarLoggerIntegration:
     ``Trainer.fit()``, so it can't catch a handler writing through a stale pre-fit ``sys.stdout`` instead of Rich's
     redirected one — the exact corruption ``_RedirectAwareStreamHandler`` exists to prevent (see
     ``rfdetr.utilities.logger``). This runs a real ``build_trainer() + trainer.fit(fast_dev_run=2)`` with
-    ``progress_bar="rich"`` (no real dataset or model weights) and logs mid-epoch from inside a callback hook, while
-    Rich's ``Live`` display is genuinely active.
+    ``progress_bar="rich"`` (same fixture pattern as ``TestProgressBarEndToEnd`` in
+    ``tests/training/callbacks/test_gpu_memory_progress_bar_callback.py``, no real dataset or model weights) and logs
+    mid-epoch from inside a callback hook, while Rich's ``Live`` display is genuinely active.
     """
 
     def test_logger_call_during_rich_fit_tracks_the_live_redirected_stream(

@@ -666,6 +666,12 @@ def _labelled_query_tensor(num_queries: int, group_detr: int, dim: int = 2, labe
     fuzz: the first column carries the (group, query) identity directly. ``label_stride``
     must exceed the largest ``q`` used by a caller, or labels from different groups collide
     (e.g. the default stride of 100 collides once ``num_queries >= 100``).
+
+    Examples:
+        >>> _labelled_query_tensor(2, 2, dim=1).squeeze(-1).tolist()
+        [0.0, 1.0, 100.0, 101.0]
+        >>> _labelled_query_tensor(150, 2, dim=1, label_stride=1000).squeeze(-1).tolist()[100]
+        100.0
     """
     rows = []
     for g in range(group_detr):

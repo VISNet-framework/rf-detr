@@ -220,9 +220,9 @@ uv run twine check --strict dist/*
 
 **Augmentations:**
 
-- Default training, validation, prediction, and export preprocessing use torchvision-native transforms.
+- **Training** uses torchvision-native transforms **unless Albumentations is installed** — `augmentation_backend="cpu"` (the default) then auto-selects Albumentations and injects the default `AUG_CONFIG`, even when `aug_config=None`. Identical training code therefore resolves differently across environments; pass `augmentation_backend="torchvision"` to pin the torchvision pipeline regardless of what is installed. This backend selection only reaches the dataset builders: `_route_transforms` chooses Albumentations only for `image_set == "train"`, so validation always stays on torchvision, and prediction (`src/rfdetr/detr.py`) and export (`src/rfdetr/export/main.py`) call torchvision preprocessing directly — do not change inference/export behavior based on the training backend.
 - Custom non-empty `aug_config` values on the CPU path use Albumentations and require `rfdetr[augment]`.
-- `augmentation_backend="gpu"` uses Kornia and requires `rfdetr[augment]`; `augmentation_backend="auto"` falls back to CPU when CUDA or Kornia is unavailable.
+- `augmentation_backend="auto"` resolves to Kornia when CUDA and Kornia are available, falling back to CPU otherwise; `augmentation_backend="gpu"` pins Kornia and requires `rfdetr[augment]`.
 
 **Model Architecture:**
 
@@ -290,13 +290,14 @@ result = subprocess.run(
 > [!IMPORTANT]
 >
 > **Canonical Reference:** See [Google-Style Docstrings and Mandatory Type Hints](.github/CONTRIBUTING.md#google-style-docstrings-and-mandatory-type-hints) in CONTRIBUTING.md for complete requirements and examples.
-
-**Requirements:**
-
-- MANDATORY type hints for all function parameters and return types
-- MANDATORY Google-style docstrings for all functions and classes
-- **Do not duplicate types in docstrings** - types are in the function signature
-- Target Python version: 3.10+
+>
+> **Requirements:**
+>
+> - MANDATORY type hints for all function parameters and return types
+> - MANDATORY Google-style docstrings for all functions and classes
+> - **Do not duplicate types in docstrings** - types are in the function signature
+> - Target Python version: 3.10+
+> - **Helper functions in `tests/` need a doctest too**: any non-`test_*` function used by tests (fixture builders, assertion helpers, reference implementations) needs a docstring with an `Examples` doctest that exercises it directly — `pyproject.toml` runs `--doctest-plus` across `tests/` on purpose. Skip the live doctest (`# doctest: +SKIP` + one-line reason) only when the helper can't run standalone (e.g. a `@pytest.fixture`, or needs real GPU/XLA/network hardware).
 
 ## Common Workflows
 

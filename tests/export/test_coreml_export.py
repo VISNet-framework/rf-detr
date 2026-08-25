@@ -67,6 +67,13 @@ def _coreml_parity_diffs(
     Raises:
         AssertionError: If output counts or shapes disagree.
         ImportError: If ``coremltools`` is not installed.
+
+    Examples:
+        Requires a real exported ``.mlpackage`` and ``coremltools`` — not runnable standalone.
+        See ``TestCoreMLEndToEnd`` for real invocations.
+
+        >>> callable(_coreml_parity_diffs)
+        True
     """
     import coremltools as ct
 
@@ -97,6 +104,13 @@ def validate_detection_coreml_vs_pytorch(
 
     Raises:
         AssertionError: When output count/shape disagrees or max-abs-diff exceeds tolerance.
+
+    Examples:
+        Requires a real exported ``.mlpackage`` and ``coremltools`` — not runnable standalone.
+        See ``TestCoreMLEndToEnd`` for real invocations.
+
+        >>> callable(validate_detection_coreml_vs_pytorch)
+        True
     """
     diffs = _coreml_parity_diffs(mlpackage_path, pytorch_model, example_input)
     assert len(diffs) == 2, f"detection export must yield (boxes, logits), got {len(diffs)} outputs"
@@ -120,6 +134,13 @@ def validate_segmentation_coreml_vs_pytorch(
 
     Raises:
         AssertionError: When output count/shape disagrees or max-abs-diff exceeds tolerance.
+
+    Examples:
+        Requires a real exported ``.mlpackage`` and ``coremltools`` — not runnable standalone.
+        See ``TestCoreMLEndToEnd`` for real invocations.
+
+        >>> callable(validate_segmentation_coreml_vs_pytorch)
+        True
     """
     diffs = _coreml_parity_diffs(mlpackage_path, pytorch_model, example_input)
     assert len(diffs) == 3, f"segmentation export must yield (boxes, logits, masks), got {len(diffs)} outputs"
@@ -165,6 +186,41 @@ class TestExportCoremlValidation:
         example = torch.zeros(1, 3, 32, 32)
         with pytest.raises(ImportError, match="rfdetr\\[coreml\\]"):
             export_coreml(model, example, tmp_path)
+
+
+class TestExportCoremlBareDefaultNaming:
+    """``variant_name=None`` + ``output_name=None`` combined with a non-default ``compute_precision`` (fp16).
+
+    Real ``coremltools.convert``/``torch.export.export`` are mocked out so this stays a fast unit test — only the naming
+    path (``resolve_export_stem`` -> precision-suffix branch) is under test, not conversion correctness (that is covered
+    by ``TestCoreMLEndToEnd``, gated on a real ``coremltools`` install).
+    """
+
+    @coreml_only
+    def test_bare_default_stem_with_non_default_fp16_precision(self, tmp_path: Path) -> None:
+        """No variant_name/output_name (bare default stem) plus fp16 (non-default precision) must still produce
+        ``inference_model_fp16.mlpackage`` — the precision suffix is not dropped just because the stem is generic."""
+        mock_exported_program = mock.MagicMock()
+        mock_exported_program.run_decompositions.return_value = mock_exported_program
+        mock_mlmodel = mock.MagicMock()
+
+        with (
+            mock.patch("torch.export.export", return_value=mock_exported_program),
+            mock.patch("rfdetr.export._coreml.converter.unsupported_coreml_ops", return_value={}),
+            mock.patch("coremltools.convert", return_value=mock_mlmodel),
+        ):
+            output_file = export_coreml(
+                torch.nn.Identity(),
+                torch.zeros(1, 3, 32, 32),
+                tmp_path,
+                variant_name=None,
+                output_name=None,
+                compute_precision="float16",
+                verbose=False,
+            )
+
+        assert output_file.name == "inference_model_fp16.mlpackage"
+        mock_mlmodel.save.assert_called_once_with(str(output_file))
 
 
 class TestVariantNamePathSafety:
@@ -374,9 +430,12 @@ class TestCoreMLEndToEnd:
     """Real CoreML export + FLOAT32 CPU numerical parity (``-m e2e_coreml``)."""
 
     def test_mlpackage_written(self, coreml_export: tuple[Any, torch.Tensor, Path, Any]) -> None:
-        """Export must write a non-empty ``.mlpackage`` directory/bundle."""
+        """Export must write a non-empty ``.mlpackage`` directory/bundle, named with the resolved precision."""
         _, _, mlpackage_path, _ = coreml_export
         assert mlpackage_path.exists()
+        # Default compute_precision resolves to FLOAT32 (see export_coreml docstring); the filename must
+        # always encode it, since precision materially changes the artifact.
+        assert mlpackage_path.stem.endswith("_fp32")
         assert mlpackage_path.suffix == ".mlpackage" or mlpackage_path.name.endswith(".mlpackage")
 
     def test_outputs_match_pytorch_structured(self, coreml_export: tuple[Any, torch.Tensor, Path, Any]) -> None:

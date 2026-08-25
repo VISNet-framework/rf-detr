@@ -345,15 +345,17 @@ RF-DETR uses [pyDeprecate](https://github.com/Borda/pyDeprecate) to emit structu
 from deprecate import deprecated
 
 
-@deprecated(target=new_fn, deprecated_in="1.7.0", remove_in="1.9.0")
+@deprecated(target=new_fn, deprecated_in="1.10.0", remove_in="1.13.0")
 def old_fn(*args, **kwargs): ...
 ```
 
 **Rules:**
 
 - All version strings must be full semver: `1.7.0`, not `1.7`.
-- Minimum window: a symbol deprecated in `X.Y.0` cannot be removed before `X.(Y+2).0` (two minor releases).
-- Every new deprecation needs an entry in `docs/getting-started/migration.md` under a `### Deprecated (removal in vX.Z.0)` subsection.
+- Classify every deprecation when it is introduced:
+    - **Major-impact deprecations** — broad or incompatible public changes must remain until the next major release. For example, a symbol deprecated in `1.x` has `remove_in="2.0.0"`.
+    - **Minor deprecations** — routine API, argument, configuration, or rename migrations use a 0.3 release-cycle window. A symbol deprecated in `X.Y.0` has `remove_in="X.(Y+3).0"`; for example, `1.10.0` removes in `1.13.0`.
+- Every new deprecation needs an entry in `docs/getting-started/migration.md` under a `### Deprecated in vX.Y → Remove in vX.Z` subsection. State the tier when the removal target alone could be ambiguous.
 
 **Removal checklist** (when `remove_in` version arrives):
 
@@ -457,6 +459,10 @@ def sample_function(param1: int, param2: int = 10) -> bool:
 ```
 
 Following this pattern helps ensure consistency throughout the codebase.
+
+> [!IMPORTANT]
+>
+> This applies to helper functions inside `tests/` too, not just `src/`. Any non-`test_*` function used as a test fixture/builder (e.g. `_make_checkpoint`, `_random_xyxy_boxes`) needs a docstring with an `Examples` doctest that exercises it directly — a small, fast check that the helper still does what its callers assume. `pyproject.toml`'s `--doctest-plus` runs doctests across `tests/` for exactly this reason (see the comment above `[tool.pytest.ini_options]`). Skip the live doctest (`# doctest: +SKIP` with a one-line reason) only when the helper cannot run standalone — e.g. it is a `@pytest.fixture` (pytest now hard-fails on direct fixture calls) or needs real GPU/XLA/network hardware.
 
 ## Reporting Bugs
 

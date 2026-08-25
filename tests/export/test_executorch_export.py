@@ -43,6 +43,13 @@ def _executorch_runtime_tensors(pte_path: Path, example: torch.Tensor) -> list[t
     """Load the ``.pte`` and run *example* through the ExecuTorch ``forward`` method; return output tensors.
 
     The export-mode forward mutates its input in place, so a fresh clone is fed to the runtime.
+
+    Examples:
+        Requires a real ``.pte`` artifact and the ``executorch`` package — not runnable standalone.
+        See ``TestExecutorchEndToEnd`` for real invocations.
+
+        >>> callable(_executorch_runtime_tensors)
+        True
     """
     _check_executorch_available(require_runtime=True)
     from executorch.runtime import Runtime
@@ -55,6 +62,13 @@ def _runtime_parity(model: Any, example: torch.Tensor, pte_path: Path, *, check_
     """Run *example* through the eager model and the ExecuTorch runtime; return per-output max-abs-diff.
 
     The export-mode forward mutates its input in place, so a fresh clone is fed to each run.
+
+    Examples:
+        Requires a real ``.pte`` artifact and the ``executorch`` package — not runnable standalone.
+        See ``TestExecutorchEndToEnd`` for real invocations.
+
+        >>> callable(_runtime_parity)
+        True
     """
     eager_tensors = eager_reference_tensors(model, example)
     runtime_tensors = _executorch_runtime_tensors(pte_path, example)
@@ -442,6 +456,15 @@ def _fake_executorch_tree(leaves: dict[str, dict[str, Any]]) -> dict[str, Any]:
 
     Each leaf dotted module is created with the given attributes, plus empty parent packages, so a ``from
     executorch.<...> import <name>`` succeeds even when the real ``executorch`` is not installed.
+
+    Examples:
+        >>> tree = _fake_executorch_tree({"executorch.foo": {"Bar": 42}})
+        >>> "executorch" in tree
+        True
+        >>> "executorch.foo" in tree
+        True
+        >>> tree["executorch.foo"].Bar
+        42
     """
     out: dict[str, Any] = {}
     for dotted, attrs in leaves.items():
@@ -627,7 +650,7 @@ class TestExportExecutorchBody:
                 output_dir=tmp_path,
                 backend=backend,
             )
-        assert out.name == "inference_model.pte"
+        assert out.name == f"inference_model_{backend}.pte"
         assert out.read_bytes() == b"PTE"
 
     @pytest.mark.parametrize("backend", [pytest.param("xnnpack", id="xnnpack"), pytest.param("coreml", id="coreml")])
@@ -661,7 +684,20 @@ class TestExportExecutorchBody:
                 backend="xnnpack",
                 variant_name="sub/dir/rfdetr-nano.pte",
             )
-        assert out.name == "rfdetr-nano.pte"
+        assert out.name == "rfdetr-nano_xnnpack.pte"
+
+    def test_output_name_overrides_and_suppresses_backend_suffix(self, tmp_path: Path) -> None:
+        """``output_name`` names the ``.pte`` verbatim, suppressing the ``_{backend}`` suffix."""
+        with mock.patch.dict(sys.modules, self._generic_modules()), mock.patch("torch.export.export"):
+            out = export_executorch(
+                model=mock.MagicMock(),
+                input_tensors=torch.zeros(1, 3, 8, 8),
+                output_dir=tmp_path,
+                backend="xnnpack",
+                variant_name="rfdetr-nano",
+                output_name="my-model",
+            )
+        assert out.name == "my-model.pte"
 
     def test_lowering_failure_wrapped_as_runtime_error(self, tmp_path: Path) -> None:
         mods = self._generic_modules()
@@ -691,6 +727,7 @@ class TestExportExecutorchBody:
             )
         mock_lower.assert_called_once()
         assert out.read_bytes() == b"QNN"
+        assert out.name == "inference_model_qnn_SM8650.pte"
 
 
 class TestPackageAvailabilityFlag:
@@ -796,6 +833,13 @@ def validate_detection_executorch_vs_pytorch(pte_path: Path, model: Any, example
 
     Raises:
         AssertionError: When output count/shape disagrees or max-abs-diff exceeds tolerance.
+
+    Examples:
+        Requires a real ``.pte`` artifact and the ``executorch`` package — not runnable standalone.
+        See ``TestExecutorchEndToEnd`` for real invocations.
+
+        >>> callable(validate_detection_executorch_vs_pytorch)
+        True
     """
     diffs = _runtime_parity(model, example, pte_path)
     assert len(diffs) == 2, f"detection export must yield (boxes, logits), got {len(diffs)} outputs"
@@ -815,6 +859,13 @@ def validate_segmentation_executorch_vs_pytorch(pte_path: Path, model: Any, exam
 
     Raises:
         AssertionError: When output count/shape disagrees or max-abs-diff exceeds tolerance.
+
+    Examples:
+        Requires a real ``.pte`` artifact and the ``executorch`` package — not runnable standalone.
+        See ``TestExecutorchEndToEnd`` for real invocations.
+
+        >>> callable(validate_segmentation_executorch_vs_pytorch)
+        True
     """
     diffs = _runtime_parity(model, example, pte_path)
     assert len(diffs) == 3, f"segmentation export must yield (boxes, logits, masks), got {len(diffs)} outputs"
@@ -861,6 +912,13 @@ def _portable_kernel_call_names(pte_path: Path) -> list[str]:
     Returns:
         Qualified op names (e.g. ``"aten::linear.out"``), repeated per kernel-call instruction; delegate
         calls (XNNPACK/CoreML subgraphs) are excluded.
+
+    Examples:
+        Requires a real ``.pte`` artifact and the ``executorch`` package — not runnable standalone.
+        See ``TestExecutorchEndToEnd.test_no_portable_addmm_kernel_calls`` for real usage.
+
+        >>> callable(_portable_kernel_call_names)
+        True
     """
     from executorch.exir._serialize import _deserialize_pte_binary
 

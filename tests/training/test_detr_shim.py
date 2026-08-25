@@ -41,12 +41,27 @@ from rfdetr.training.module_model import RFDETRModelModule
 
 
 def _make_model_config(**overrides):
+    """Build a minimal RFDETRBaseConfig for shim tests.
+
+    Examples:
+        >>> config = _make_model_config(num_classes=7)
+        >>> config.device, config.num_classes, config.pretrain_weights
+        ('cpu', 7, None)
+    """
     defaults = dict(pretrain_weights=None, num_classes=3, device="cpu")
     defaults.update(overrides)
     return RFDETRBaseConfig(**defaults)
 
 
 def _make_train_config(tmp_path, **overrides):
+    """Build a minimal TrainConfig for shim tests.
+
+    Examples:
+        >>> from pathlib import Path
+        >>> config = _make_train_config(Path("/tmp/example"), epochs=3)
+        >>> config.epochs, Path(config.dataset_dir).name, Path(config.output_dir).name
+        (3, 'ds', 'out')
+    """
     defaults = dict(
         dataset_dir=str(tmp_path / "ds"),
         output_dir=str(tmp_path / "out"),
@@ -61,6 +76,12 @@ def _make_rfdetr_self(tmp_path, **train_overrides):
     """Return a MagicMock shaped like RFDETR with real config objects.
 
     No spec is used because RFDETR.model is set in __init__ (instance attr) and spec=RFDETR would block access to it.
+
+    Examples:
+        >>> from pathlib import Path
+        >>> mock_self = _make_rfdetr_self(Path('/tmp/example'))
+        >>> mock_self.model_config.device, Path(mock_self.get_train_config().output_dir).name
+        ('cpu', 'out')
     """
     mock = MagicMock()
     mock.model_config = _make_model_config()
@@ -431,6 +452,25 @@ class TestRFDETRTrainPTLAbsorption:
             RFDETR.train(mock_self, device=torch.device("cuda:2"))
         config = mock_self.get_train_config.return_value
         mock_bt.assert_called_once_with(config, mock_self.model_config, accelerator="gpu", devices=[2])
+
+    def test_device_xla_absorbed_as_accelerator_tpu(self, tmp_path, patch_lit):
+        """Device='xla' forwards accelerator='tpu' -- PTL's canonical name for the XLA backend."""
+        mock_self = _make_rfdetr_self(tmp_path)
+        p_mod, p_dm, p_bt, _mcls, _dmcls, mock_bt = patch_lit
+        with p_mod, p_dm, p_bt:
+            RFDETR.train(mock_self, device="xla")
+        config = mock_self.get_train_config.return_value
+        mock_bt.assert_called_once_with(config, mock_self.model_config, accelerator="tpu")
+        assert "devices" not in mock_bt.call_args.kwargs
+
+    def test_device_torch_device_xla_index_absorbed_as_accelerator_tpu_devices_list(self, tmp_path, patch_lit):
+        """device=torch.device('xla:0') forwards accelerator='tpu' and devices=[0]."""
+        mock_self = _make_rfdetr_self(tmp_path)
+        p_mod, p_dm, p_bt, _mcls, _dmcls, mock_bt = patch_lit
+        with p_mod, p_dm, p_bt:
+            RFDETR.train(mock_self, device=torch.device("xla:0"))
+        config = mock_self.get_train_config.return_value
+        mock_bt.assert_called_once_with(config, mock_self.model_config, accelerator="tpu", devices=[0])
 
     def test_device_invalid_raises_value_error_with_expected_message(self, tmp_path, patch_lit):
         """Invalid device strings raise a ValueError with the train() device hint."""
@@ -1548,6 +1588,68 @@ class TestDeployToRoboflow:
 
         conflict_warnings = [w for w in caught if "deploy_to_roboflow" in str(w.message)]
         assert not conflict_warnings
+
+    @staticmethod
+    def _deploy_with_versions(
+        mock_self: MagicMock,
+        version_info: list[dict[str, Any]],
+        **deploy_kwargs: Any,
+    ) -> MagicMock:
+        """Call deploy_to_roboflow against a mocked project preloaded with version_info; return the project mock.
+
+        Examples:
+            >>> TestDeployToRoboflow._deploy_with_versions(model, [{"id": "ws/proj/1"}])  # doctest: +SKIP
+            (needs the mocked RFDETR instance built by the ``mock_self`` fixture)
+        """
+        mock_rf = MagicMock()
+        project_mock = mock_rf.workspace.return_value.project.return_value
+        project_mock.get_version_information.return_value = version_info
+        with patch("roboflow.Roboflow", return_value=mock_rf):
+            RFDETR.deploy_to_roboflow(
+                mock_self,
+                workspace="test-workspace",
+                project_id="test-project",
+                api_key="dummy-key",
+                **deploy_kwargs,
+            )
+        return project_mock
+
+    def test_omitted_version_resolves_to_latest(self, tmp_path, monkeypatch, mock_self, patch_lit):
+        """Omitting version deploys to the highest existing dataset version.
+
+        Project has versions 1 and 3 (server list order not guaranteed); auto-resolution must pick 3 so the model lands
+        on the newest dataset snapshot without the caller tracking version numbers.
+        """
+        monkeypatch.chdir(tmp_path)
+
+        project_mock = self._deploy_with_versions(mock_self, [{"id": "ws/proj/9"}, {"id": "ws/proj/10"}])
+
+        project_mock.version.assert_called_once_with(10)
+
+    def test_omitted_version_falls_back_to_one_for_empty_project(self, tmp_path, monkeypatch, mock_self, patch_lit):
+        """Omitting version on a project with no versions falls back to version 1.
+
+        The SDK's Version lookup then raises its own "Version number 1 is not found." for a genuinely empty project, so
+        the fallback never silently deploys anywhere unexpected.
+        """
+        monkeypatch.chdir(tmp_path)
+
+        project_mock = self._deploy_with_versions(mock_self, [])
+
+        project_mock.version.assert_called_once_with(1)
+
+    def test_explicit_version_skips_lookup(self, tmp_path, monkeypatch, mock_self, patch_lit):
+        """An explicitly passed version is used verbatim without any version-list lookup.
+
+        Guards the no-surprise contract: existing callers pinning a version must not trigger the extra
+        get_version_information network round-trip nor have their choice overridden by a newer version.
+        """
+        monkeypatch.chdir(tmp_path)
+
+        project_mock = self._deploy_with_versions(mock_self, [{"id": "ws/proj/9"}], version=2)
+
+        project_mock.get_version_information.assert_not_called()
+        project_mock.version.assert_called_once_with(2)
 
 
 # ---------------------------------------------------------------------------

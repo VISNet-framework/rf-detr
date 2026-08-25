@@ -53,12 +53,22 @@ lora = [
 train = [
     "peft",                            # LoRA backbone fine-tuning (available during training)
     "pytorch_lightning>=2.6,<3,!=2.6.2,!=2.6.3",  # Keep exclusions; see issue #1016 / related advisory for why 2.6.2 and 2.6.3 are blocked
-    "torchmetrics[detection]>=1.2",
+    "torchmetrics[detection]>=1.8.2,<1.9.0",  # one-pass COCO adapter validates the TorchMetrics 1.8 private backend contract; re-verify _validate_private_contract() (src/rfdetr/training/coco_map.py) against 1.9+ before widening this pin
     "faster-coco-eval>=1.7.2",
     "pycocotools",
     "scipy",
+    # Batched Hungarian solver for the matcher (Apache-2.0). Speeds up the CUDA path only — its
+    # Triton backend needs Linux + compute capability >= 8.0 + torch >= 2.4; everywhere else it
+    # falls back internally to the same SciPy solve the matcher would have called, so only speed
+    # differs. The >=0.1.0 floor excludes the 0.0.x line, whose sdist compiled against nvcc.
+    # Measurement evidence: .plans/active/plan-native-linear-assignment.md Phase M3 Item 2.
+    # TODO: 0.1.0 is not on PyPI yet, so it comes from a branch archive meanwhile. RELEASE BLOCKER —
+    #   the URL lands verbatim in built metadata as `Requires-Dist`, and PEP 440 has public indexes
+    #   reject direct references, so publish-release.yml fails at the PyPI upload step while this
+    #   entry is a URL and `twine check --strict` does not catch it. Once 0.1.0 ships, replace this
+    #   TODO and the URL — nothing else — with: "torch-linear-assignment>=0.1.0,<0.2.0",
+    "torch-linear-assignment @ https://github.com/Borda/torch-hungarian/archive/refs/heads/refactor/triton.zip",
     "roboflow",
-    "rf100vl",
 ]
 augment = [
     "albumentations>=1.4.24,<3.0.0",  # optional custom CPU augmentations
@@ -142,6 +152,19 @@ visual = [
 ]
 cli = ["jsonargparse[signatures]>=4.27.7"]
 plus = ["rfdetr_plus>=1.0.1, <2.0.0"]
+# XLA backend for TPU training AND hardware-free XLA validation on CPU/GPU PJRT.
+# torch_xla is built on top of torch (NOT mutually exclusive — it requires torch present) and its
+# _XLAC extension is ABI-locked to ONE torch minor (a mismatch surfaces as an `undefined symbol`
+# ImportError on `import torch_xla`). torch_xla does not hard-pin torch in requires_dist, and PEP 508
+# cannot express "equal minor", so we pin BOTH to the current known-good pair (2.9) — bump the two
+# together when a newer torch_xla ships. Wheels are Linux x86_64 only (py3.10-3.13) -> sys_platform
+# marker keeps macOS/Windows installs of this extra a no-op. The bare wheel runs the CPU PJRT plugin
+# (PJRT_DEVICE=CPU) with no libtpu; real TPU adds torch_xla[tpu] (libtpu), GPU PJRT needs the separate
+# CUDA plugin wheel. Used by ci-tests-xla.yml to exercise @pytest.mark.xla paths.
+xla = [
+    "torch==2.9.*; sys_platform == 'linux'",
+    "torch_xla==2.9.*; sys_platform == 'linux'",
+]
 
 [dependency-groups]
 # TODO: Temporary: GPU runner only has CUDA 12.8 driver (12080); torch>=2.11 requires a newer driver.
@@ -177,6 +200,7 @@ tests = [
   "pytest-rerunfailures>=10,<15",
   "pytest-timeout>=2,<3",
   "pytest-doctestplus>=1.2,<2",
+  "pandas",  # imported directly by tests/training/test_metrics_csv.py to read CSVLogger output
   "tomli>=2.0; python_version < '3.11'",
 ]
 
@@ -301,6 +325,8 @@ addopts = [
 pythonpath = ["src", "."]
 markers = [
     "gpu: tests that require GPU or are slow on CPU",
+    "xla: tests that require an XLA device or torch_xla runtime (TPU, or CPU/GPU PJRT)",
+    "tpu: tests that require real TPU hardware (libtpu/MXU); not runnable on CPU/GPU PJRT",
     "coco17: tests that require COCO 2017 images or annotations",
     # `flaky` is provided by pytest-rerunfailures; registered here too for clarity and to stay
     # safe under --strict-markers (used by tests/benchmarks/test_training_*.py).
@@ -308,6 +334,7 @@ markers = [
     "e2e_executorch: ExecuTorch end-to-end export + numerical parity (opt-in)",
     "e2e_coreml: CoreML end-to-end convert + numerical parity (structured and photo inputs; opt-in)",
     "e2e_tensorrt: TensorRT end-to-end ONNX->engine build + parity (GPU, opt-in)",
+    "e2e_roboflow: live deploy_to_roboflow() upload + train-status validation (issue #1116); requires ROBOFLOW_API_KEY (opt-in)",
 ]
 filterwarnings = [
     # pytest-xdist workers close their channel before teardown completes;
@@ -361,6 +388,7 @@ overrides = [
     "seaborn", "seaborn.*",
     "tqdm", "tqdm.*",
     "kornia", "kornia.*",
+    "albumentations", "albumentations.*",
     "onnx", "onnx.*",
     "onnx2tf", "onnx2tf.*",
     "onnx_graphsurgeon", "onnx_graphsurgeon.*",
