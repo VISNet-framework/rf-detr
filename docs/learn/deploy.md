@@ -1,4 +1,15 @@
+---
+description: Deploy fine-tuned RF-DETR detection and segmentation models to Roboflow for cloud inference, edge hardware, and multi-step vision workflows.
+---
+
 # Deploy a Trained RF-DETR Model
+
+!!! tip "Key Takeaways"
+
+    - Deploy fine-tuned RF-DETR models to Roboflow with a single `deploy_to_roboflow()` call
+    - Supports both detection and segmentation model deployment
+    - Run deployed models via Roboflow Inference on cloud, edge hardware, or NVIDIA Jetson
+    - Model weights are cached locally after the first inference run for fast subsequent predictions
 
 You can deploy a fine-tuned RF-DETR model to Roboflow.
 
@@ -6,52 +17,94 @@ Deploying to Roboflow allows you to create multi-step computer vision applicatio
 
 To deploy your model to Roboflow, run:
 
-```python
-from rfdetr import RFDETRNano
+=== "Object Detection"
 
-x = RFDETRNano(pretrain_weights="<path/to/pretrain/weights/dir>")
-x.deploy_to_roboflow(
-  workspace="<your-workspace>",
-  project_id="<your-project-id>",
-  version=1,
-  api_key="<YOUR_API_KEY>"
-)
-```
+    ```python
+    from rfdetr import RFDETRNano
 
-Above, set your Roboflow Workspace ID, the ID of the project to which you want to upload your model, and your Roboflow API key.
+    x = RFDETRNano(pretrain_weights="<path/to/pretrain/weights/dir>")
+    x.deploy_to_roboflow(
+        workspace="<your-workspace>",
+        project_id="<your-project-id>",
+        api_key="<YOUR_API_KEY>",
+    )
+    ```
+
+=== "Image Segmentation"
+
+    ```python
+    from rfdetr import RFDETRSegMedium
+
+    x = RFDETRSegMedium(pretrain_weights="<path/to/pretrain/weights/dir>")
+    x.deploy_to_roboflow(
+        workspace="<your-workspace>",
+        project_id="<your-project-id>",
+        api_key="<YOUR_API_KEY>",
+    )
+    ```
+
+Above, set your Roboflow Workspace ID, the ID of the project to which you want to upload your model, and your Roboflow API key. By default the model is deployed to the project's latest dataset version; pass `version=<number>` to target a specific one. A project with no generated versions falls back to version `1`, for which the Roboflow SDK raises its usual error.
 
 - [Learn how to find your Workspace and Project ID.](https://docs.roboflow.com/developer/authentication/workspace-and-project-ids)
 - [Learn how to find your API key.](https://docs.roboflow.com/developer/authentication/find-your-roboflow-api-key)
 
 You can then run your model with Roboflow Inference:
 
-```python
-import os
-import supervision as sv
-from inference import get_model
-from PIL import Image
-from io import BytesIO
-import requests
+=== "Object Detection"
 
-url = "https://media.roboflow.com/dog.jpeg"
-image = Image.open(BytesIO(requests.get(url).content))
+    ```python
+    import supervision as sv
+    from inference import get_model
+    from PIL import Image
+    from io import BytesIO
+    import requests
 
-model = get_model("rfdetr-base")  # replace with your Roboflow model ID
+    url = "https://media.roboflow.com/dog.jpeg"
+    image = Image.open(BytesIO(requests.get(url).content))
 
-predictions = model.infer(image, confidence=0.5)[0]
+    model = get_model("rfdetr-large")  # replace with your Roboflow model ID
 
-detections = sv.Detections.from_inference(predictions)
+    predictions = model.infer(image, confidence=0.5)[0]
 
-labels = [prediction.class_name for prediction in predictions.predictions]
+    detections = sv.Detections.from_inference(predictions)
 
-annotated_image = image.copy()
-annotated_image = sv.BoxAnnotator(color=sv.ColorPalette.ROBOFLOW).annotate(annotated_image, detections)
-annotated_image = sv.LabelAnnotator(color=sv.ColorPalette.ROBOFLOW).annotate(annotated_image, detections, labels)
+    labels = [prediction.class_name for prediction in predictions.predictions]
 
-sv.plot_image(annotated_image)
-```
+    annotated_image = image.copy()
+    annotated_image = sv.BoxAnnotator().annotate(annotated_image, detections)
+    annotated_image = sv.LabelAnnotator().annotate(annotated_image, detections, labels)
 
-Above, replace `rfdetr-base` with the your Roboflow model ID. You can find this ID from the "Models" list in your Roboflow dashboard:
+    sv.plot_image(annotated_image)
+    ```
+
+=== "Image Segmentation"
+
+    ```python
+    import supervision as sv
+    from inference import get_model
+    from PIL import Image
+    from io import BytesIO
+    import requests
+
+    url = "https://media.roboflow.com/dog.jpeg"
+    image = Image.open(BytesIO(requests.get(url).content))
+
+    model = get_model("rfdetr-seg-small")  # replace with your Roboflow model ID
+
+    predictions = model.infer(image, confidence=0.5)[0]
+
+    detections = sv.Detections.from_inference(predictions)
+
+    labels = [prediction.class_name for prediction in predictions.predictions]
+
+    annotated_image = image.copy()
+    annotated_image = sv.MaskAnnotator().annotate(annotated_image, detections)
+    annotated_image = sv.LabelAnnotator().annotate(annotated_image, detections, labels)
+
+    sv.plot_image(annotated_image)
+    ```
+
+Above, replace `rfdetr-large` with the your Roboflow model ID. You can find this ID from the "Models" list in your Roboflow dashboard:
 
 ![](https://media.roboflow.com/rfdetr/models-list.png)
 
