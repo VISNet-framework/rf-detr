@@ -1303,8 +1303,8 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
         "val": (root / "val.json"),
         "test": (root / "test.json"),
     }
-
-    img_folder, ann_file = PATHS[image_set.split("_", maxsplit=1)[0]]
+    split = image_set.split("_", maxsplit=1)[0]
+    img_folder, ann_file = PATHS[split]
 
     square_resize_div_64 = getattr(args, "square_resize_div_64", False)
     include_masks = getattr(args, "segmentation_head", False)
