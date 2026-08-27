@@ -1299,9 +1299,9 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
     has_keypoints = getattr(args, "use_grouppose_keypoints", False)
     mode = "person_keypoints" if has_keypoints else "instances"
     PATHS = {
-        "train": (root / "train.json"),
-        "val": (root / "val.json"),
-        "test": (root / "test.json"),
+        "train": (root, root / "train.json"),
+        "val": (root, root / "val.json"),
+        "test": (root, root / "test.json"),
     }
     split = image_set.split("_", maxsplit=1)[0]
     img_folder, ann_file = PATHS[split]
