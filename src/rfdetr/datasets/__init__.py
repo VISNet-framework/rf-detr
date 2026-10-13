@@ -61,7 +61,7 @@ def detect_roboflow_format(dataset_dir: Path) -> str:
         ValueError: If neither format is detected
     """
     # Check for COCO format: look for _annotations.coco.json in train folder
-    coco_annotation = dataset_dir / "train" / "_annotations.coco.json"
+    coco_annotation = dataset_dir / "train.json"
     if coco_annotation.exists():
         return "coco"
 

@@ -54,7 +54,7 @@ _COCO_MAX_SIZE = 1333
 
 
 def is_valid_coco_dataset(dataset_dir: str) -> bool:
-    return (Path(dataset_dir) / "train" / "_annotations.coco.json").exists()
+    return (Path(dataset_dir) / "train.json").exists()
 
 
 # Values a COCO export uses to say "this category has no parent".
@@ -188,7 +188,7 @@ def _train_split_cat2label(dataset_root: Path) -> dict[int, int] | None:
         Mapping from COCO category id to contiguous label index, or ``None`` when the train annotation file is missing
         or unreadable, in which case the caller keeps the split-local mapping.
     """
-    train_ann_file = dataset_root / "train" / "_annotations.coco.json"
+    train_ann_file = dataset_root / "train.json"
     if not train_ann_file.exists():
         return None
     try:
@@ -1444,13 +1444,13 @@ def build_coco(image_set: str, args: Any, resolution: int) -> CocoDetection:
     # Detection dataset args may omit keypoint fields; default to the detection annotation path.
     has_keypoints = getattr(args, "use_grouppose_keypoints", False)
     mode = "person_keypoints" if has_keypoints else "instances"
-    PATHS = {  # noqa: N806
-        "train": (root / "train2017", root / "annotations" / f"{mode}_train2017.json"),
-        "val": (root / "val2017", root / "annotations" / f"{mode}_val2017.json"),
-        "test": (root / "test2017", root / "annotations" / "image_info_test-dev2017.json"),
+    PATHS = {
+        "train": (root, root / "train.json"),
+        "val": (root, root / "val.json"),
+        "test": (root, root / "test.json"),
     }
-
-    img_folder, ann_file = PATHS[image_set.split("_", maxsplit=1)[0]]
+    split = image_set.split("_", maxsplit=1)[0]
+    img_folder, ann_file = PATHS[split]
 
     # Model-dependent pipeline options are mandatory for direct builder calls.
     square_resize_div_64 = args.square_resize_div_64

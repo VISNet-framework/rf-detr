@@ -2230,7 +2230,7 @@ class RFDETR:
         """Read the train-split COCO categories that survive the grouping-category filter.
 
         Single source for the category basis shared by :meth:`_load_classes` and
-        :meth:`_detect_num_classes_for_training`: both need the categories of ``train/_annotations.coco.json`` that
+        :meth:`_detect_num_classes_for_training`: both need the categories of ``train.json`` that
         :func:`~rfdetr.datasets.coco.filter_parent_categories` keeps. Hand-copying that read-and-filter pair into each
         method lets the two drift apart, and drift here means ``num_classes`` disagreeing with the label space.
 
@@ -2241,7 +2241,7 @@ class RFDETR:
             The kept ``categories`` entries ordered by category id — the same basis and order
             :class:`~rfdetr.datasets.coco.CocoDetection` uses to assign label indices.
         """
-        coco_path = os.path.join(dataset_dir, "train", "_annotations.coco.json")
+        coco_path = os.path.join(dataset_dir, "train.json")
         with open(coco_path, encoding="utf-8") as f:
             anns = json.load(f)
         return filter_parent_categories(anns["categories"], annotated_category_ids(anns))
@@ -2373,7 +2373,7 @@ class RFDETR:
         """
         if is_valid_coco_dataset(dataset_dir):
             if use_grouppose_keypoints:
-                coco_path = os.path.join(dataset_dir, "train", "_annotations.coco.json")
+                coco_path = os.path.join(dataset_dir, "train.json")
                 return len(infer_coco_keypoint_schema(coco_path).class_names)
             if coco_categories is None:
                 coco_categories = RFDETR._filtered_coco_categories(dataset_dir)
@@ -2517,7 +2517,7 @@ class RFDETR:
         """
         if not is_valid_coco_dataset(dataset_dir):
             return None
-        annotation_path = Path(dataset_dir) / "train" / "_annotations.coco.json"
+        annotation_path = Path(dataset_dir) / "train.json"
         return annotation_path if annotation_path.exists() else None
 
     @staticmethod
